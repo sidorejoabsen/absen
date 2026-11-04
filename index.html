@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description" content="Sistem Absensi Digital Multi-Cabang Berbasis GPS & Anti-Curang — Lisensi by Arraihan Academy (SWK)" />
+  <title>Absensi Digital Multi-Cabang — Lisensi by Arraihan Academy (SWK)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --theme-primary: #2563eb;
+      --theme-hover: #1d4ed8;
+      --theme-light: #eff6ff;
+      --theme-border: #bfdbfe;
+      --theme-grad-start: #0f172a;
+      --theme-grad-mid: #1e3a8a;
+    }
+    .theme-bg { background-color: var(--theme-primary) !important; }
+    .theme-bg-hover:hover { background-color: var(--theme-hover) !important; }
+    .theme-text { color: var(--theme-primary) !important; }
+    .theme-bg-light { background-color: var(--theme-light) !important; }
+    .theme-border { border-color: var(--theme-border) !important; }
+    .theme-login-gradient { background: linear-gradient(135deg, var(--theme-grad-start) 0%, var(--theme-grad-mid) 50%, var(--theme-grad-start) 100%) !important; }
+
+    /* Kompatibilitas penuh untuk Blogger (keluar dari kontainer tema) & GitHub Pages */
+    #app-fullscreen-wrapper {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+      background: #f8fafc; z-index: 999999; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    html.dark #app-fullscreen-wrapper { background: #0f172a; color: #f1f5f9; }
+    html.dark .bg-white { background-color: #1e293b !important; color: #f1f5f9; }
+    html.dark .bg-slate-50 { background-color: #0f172a !important; color: #cbd5e1; }
+    html.dark .border, html.dark .border-b, html.dark .border-t { border-color: #334155 !important; }
+    html.dark .text-slate-800, html.dark .text-slate-900 { color: #f8fafc !important; }
+    html.dark .text-slate-600, html.dark .text-slate-700 { color: #cbd5e1 !important; }
+    html.dark input, html.dark select, html.dark textarea {
+      background-color: #0f172a !important; color: #f8fafc !important; border-color: #334155 !important;
+    }
+
+    body > *:not(#app-fullscreen-wrapper) { display: none !important; }
+    body, html { margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
+    .mirror-video { transform: scaleX(-1); }
+    .print-only { display: none; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    select:disabled, input:disabled { opacity: 0.65; cursor: not-allowed; }
+
+    @media print {
+      body, html, #app-fullscreen-wrapper {
+        position: static !important; overflow: visible !important;
+        background: #fff !important; color: #000 !important; height: auto !important; width: 100% !important;
+      }
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      .print-container { box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; background: #fff !important; color: #000 !important; }
+      table { border-collapse: collapse !important; width: 100% !important; }
+      th, td { border: 1px solid #334155 !important; padding: 5px 7px !important; font-size: 10.5px !important; color: #000 !important; }
+      thead { display: table-header-group; }
+      tr { page-break-inside: avoid; }
+      .no-foto-print .col-foto { display: none !important; }
+      @page { size: A4 landscape; margin: 12mm; }
+    }
+  </style>
+</head>
+<body>
+<div id="app-fullscreen-wrapper">
+
+  <!-- PERINGATAN HTTPS -->
+  <div id="https-warning" class="no-print hidden bg-rose-600 text-white text-xs font-bold py-2 px-4 text-center">
+    <i class="fa-solid fa-triangle-exclamation"></i> Kamera/GPS membutuhkan koneksi aman. Pastikan membuka aplikasi melalui <strong>https://</strong>
+  </div>
+
+  <!-- LOADING OVERLAY & TOAST -->
+  <div id="loading-overlay" class="no-print hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl p-5 shadow-2xl flex flex-col items-center max-w-xs w-full mx-4 border">
+      <div class="w-11 h-11 border-4 border-t-transparent rounded-full animate-spin mb-3" style="border-color:var(--theme-primary);border-top-color:transparent"></div>
+      <p id="loading-text" class="text-xs sm:text-sm font-bold text-center text-slate-800">Memproses...</p>
+    </div>
+  </div>
+  <div id="toast-box" class="no-print fixed bottom-5 right-5 left-5 sm:left-auto z-[1000000] hidden">
+    <div id="toast-content" class="flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl text-white text-xs sm:text-sm font-semibold bg-emerald-600">
+      <i id="toast-icon" class="fa-solid fa-circle-check text-lg"></i>
+      <span id="toast-msg">Berhasil!</span>
+    </div>
+  </div>
+
+  <!-- ================= HALAMAN AWAL / LOGIN ================= -->
+  <div id="login-view" class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 theme-login-gradient relative">
+    <button type="button" onclick="toggleDarkMode()" class="absolute top-4 right-4 w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur-xs border border-white/15" title="Mode Gelap/Terang">
+      <i id="dark-icon-login" class="fa-solid fa-moon"></i>
+    </button>
+
+    <div class="w-full max-w-4xl flex flex-col lg:flex-row items-center justify-center gap-6 my-auto">
+
+      <!-- PANEL FOTO BUPATI & WAKIL BUPATI (OTOMATIS BERSIH/HIDDEN BILA TIDAK DIINPUT FOTO) -->
+      <div id="login-pejabat-showcase" class="hidden w-full lg:w-7/12 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-5 sm:p-6 text-white shadow-2xl">
+        <div class="text-center mb-4">
+          <span class="px-3 py-1 rounded-full bg-white/15 text-[11px] font-bold tracking-wider uppercase">Pimpinan Daerah</span>
+        </div>
+        <div id="pejabat-grid" class="grid grid-cols-2 gap-4 items-stretch justify-center">
+          <div id="card-bupati" class="hidden bg-white/10 border border-white/15 rounded-2xl p-3 flex flex-col items-center text-center">
+            <div class="w-28 h-36 sm:w-36 sm:h-44 rounded-xl overflow-hidden bg-white/5 border border-white/20 shadow-inner mb-2.5">
+              <img id="login-bupati-img" src="" alt="Bupati" class="w-full h-full object-cover object-top" />
+            </div>
+            <span class="text-[10px] uppercase tracking-widest text-amber-300 font-extrabold">Bupati</span>
+            <p id="login-bupati-nama" class="text-xs sm:text-sm font-bold leading-snug mt-0.5">-</p>
+          </div>
+          <div id="card-wabup" class="hidden bg-white/10 border border-white/15 rounded-2xl p-3 flex flex-col items-center text-center">
+            <div class="w-28 h-36 sm:w-36 sm:h-44 rounded-xl overflow-hidden bg-white/5 border border-white/20 shadow-inner mb-2.5">
+              <img id="login-wabup-img" src="" alt="Wakil Bupati" class="w-full h-full object-cover object-top" />
+            </div>
+            <span class="text-[10px] uppercase tracking-widest text-amber-300 font-extrabold">Wakil Bupati</span>
+            <p id="login-wabup-nama" class="text-xs sm:text-sm font-bold leading-snug mt-0.5">-</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- KARTU LOGIN UTAMA -->
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200/80">
+        <div class="theme-bg p-6 text-center text-white relative">
+          <div class="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3 p-1.5 shadow-inner">
+            <img id="login-logo-img" src="" alt="Logo Instansi" class="hidden w-full h-full object-contain rounded-xl bg-white p-1" />
+            <i id="login-logo-icon" class="fa-solid fa-fingerprint text-4xl"></i>
+          </div>
+          <h1 id="login-instansi-title" class="text-xl font-extrabold tracking-tight">Absensi Digital</h1>
+          <p id="login-instansi-sub" class="text-white/85 text-xs mt-1">Sistem Presensi Geotagging & Anti-Curang Terpadu</p>
+        </div>
+
+        <form onsubmit="handleLogin(event)" class="p-6 space-y-4">
+          <div id="login-security-badge" class="p-2.5 rounded-xl bg-blue-50 border border-blue-200 flex items-center gap-2.5 text-[11px] text-blue-900 font-semibold">
+            <i class="fa-solid fa-shield-halved text-blue-600 text-base shrink-0"></i>
+            <div class="min-w-0">
+              <p id="login-security-title" class="font-bold leading-tight">Proteksi Anti-Curang Aktif</p>
+              <p id="login-device-label" class="text-[10px] text-blue-700 font-mono truncate mt-0.5">Mendeteksi ID Perangkat...</p>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Username Pegawai</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i class="fa-solid fa-user"></i></span>
+              <input type="text" id="login-username" required autocomplete="username" autocapitalize="none" placeholder="Masukkan username" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Password</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i class="fa-solid fa-lock"></i></span>
+              <input type="password" id="login-password" required autocomplete="current-password" placeholder="Masukkan password" class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+              <button type="button" onclick="togglePw('login-password',this)" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400"><i class="fa-solid fa-eye"></i></button>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full theme-bg theme-bg-hover text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 transition active:scale-[0.99]">
+            <i class="fa-solid fa-right-to-bracket"></i><span>Masuk Aplikasi</span>
+          </button>
+
+          <div class="pt-2 border-t text-center">
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
+              <i class="fa-solid fa-certificate text-amber-500"></i> Lisensi by <strong class="text-slate-700">Arraihan Academy (SWK)</strong>
+            </span>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= TAMPILAN UTAMA APLIKASI ================= -->
+  <div id="main-view" class="hidden min-h-screen flex flex-col">
+    <header class="no-print bg-white border-b sticky top-0 z-30">
+      <div class="max-w-7xl mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-10 h-10 theme-bg text-white rounded-xl flex items-center justify-center overflow-hidden p-1 shadow-xs shrink-0">
+            <img id="nav-logo-img" src="" alt="" class="hidden w-full h-full object-contain bg-white rounded-lg p-0.5" />
+            <i id="nav-logo-icon" class="fa-solid fa-location-dot text-lg"></i>
+          </div>
+          <div class="min-w-0">
+            <h2 id="nav-instansi-name" class="font-extrabold text-slate-800 text-xs sm:text-base leading-tight truncate">Absensi Digital</h2>
+            <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+              <span id="nav-cabang-badge" class="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-bold truncate">-</span>
+              <span id="nav-multi-badge" class="hidden text-[9px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-bold"><i class="fa-solid fa-users-viewfinder"></i> Multi-Cabang</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          <div class="text-right hidden sm:block">
+            <p id="nav-user-name" class="text-xs font-bold text-slate-800 leading-tight">Nama</p>
+            <p id="nav-user-role" class="text-[10px] theme-text font-bold">Role</p>
+          </div>
+          <button onclick="toggleDarkMode()" title="Mode Gelap/Terang" class="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">
+            <i id="dark-icon-main" class="fa-solid fa-moon"></i>
+          </button>
+          <button onclick="handleLogout()" title="Keluar" class="px-2.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold">
+            <i class="fa-solid fa-power-off"></i>
+          </button>
+        </div>
+      </div>
+      <div class="bg-slate-50 border-t px-3 sm:px-4">
+        <div class="max-w-7xl mx-auto flex items-center gap-1 overflow-x-auto py-1.5" id="nav-tabs-container"></div>
+      </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6">
+
+      <!-- ===== TAB DASHBOARD ===== -->
+      <section id="tab-dashboard" class="tab-pane hidden space-y-5 no-print">
+        <div class="flex flex-wrap gap-3 justify-between items-end">
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold text-slate-800">Ringkasan Kehadiran Hari Ini</h3>
+            <p id="dash-sub" class="text-xs text-slate-500"></p>
+          </div>
+          <div class="flex gap-2 items-end">
+            <div id="dash-cabang-wrap" class="hidden text-xs font-bold">Cabang
+              <select id="dash-cabang" onchange="loadDashboard()" class="block mt-1 p-2 border rounded-xl bg-white"></select>
+            </div>
+            <button onclick="loadDashboard()" class="px-3.5 py-2 bg-white border rounded-xl text-xs font-bold shadow-2xs">
+              <i class="fa-solid fa-arrows-rotate theme-text mr-1"></i> Muat Ulang
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div class="bg-white p-3.5 rounded-2xl border flex items-center gap-3 shadow-2xs">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-user-check"></i></div>
+            <div><p class="text-[10px] text-slate-500 font-bold uppercase">Hadir Masuk</p><p id="stat-hadir" class="text-xl font-extrabold">0</p></div>
+          </div>
+          <div class="bg-white p-3.5 rounded-2xl border flex items-center gap-3 shadow-2xs">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-clock"></i></div>
+            <div><p class="text-[10px] text-slate-500 font-bold uppercase">Terlambat</p><p id="stat-terlambat" class="text-xl font-extrabold">0</p></div>
+          </div>
+          <div class="bg-white p-3.5 rounded-2xl border flex items-center gap-3 shadow-2xs">
+            <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-briefcase"></i></div>
+            <div><p class="text-[10px] text-slate-500 font-bold uppercase">Dinas Luar (DL)</p><p id="stat-dl" class="text-xl font-extrabold">0</p></div>
+          </div>
+          <div class="bg-white p-3.5 rounded-2xl border flex items-center gap-3 shadow-2xs">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-file-lines"></i></div>
+            <div><p class="text-[10px] text-slate-500 font-bold uppercase">Izin / Sakit</p><p id="stat-izin" class="text-xl font-extrabold">0</p></div>
+          </div>
+          <div class="bg-white p-3.5 rounded-2xl border flex items-center gap-3 shadow-2xs col-span-2 sm:col-span-1">
+            <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-user-clock"></i></div>
+            <div><p class="text-[10px] text-slate-500 font-bold uppercase">Belum Absen</p><p id="stat-belum" class="text-xl font-extrabold">0</p></div>
+          </div>
+        </div>
+
+        <div id="dash-summary-card" class="hidden bg-white rounded-2xl border overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-600">
+              <tr>
+                <th class="py-3 px-4">Cabang</th>
+                <th class="py-3 px-4 text-center">Pegawai</th>
+                <th class="py-3 px-4 text-center">Hadir</th>
+                <th class="py-3 px-4 text-center">Terlambat</th>
+                <th class="py-3 px-4 text-center">DL</th>
+                <th class="py-3 px-4 text-center">Izin</th>
+                <th class="py-3 px-4 text-center">Sakit</th>
+                <th class="py-3 px-4 text-center">Belum Absen</th>
+              </tr>
+            </thead>
+            <tbody id="dash-summary-tbody" class="divide-y"></tbody>
+          </table>
+        </div>
+
+        <div class="bg-white rounded-2xl border overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-600">
+              <tr>
+                <th class="py-3 px-4">Foto</th>
+                <th class="py-3 px-4">Waktu</th>
+                <th class="py-3 px-4">Nama & Cabang</th>
+                <th class="py-3 px-4">Tipe & Status</th>
+                <th class="py-3 px-4">Keterangan</th>
+              </tr>
+            </thead>
+            <tbody id="dash-today-tbody" class="divide-y"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== TAB ABSEN (MASUK, PULANG, DL, IZIN, SAKIT) ===== -->
+      <section id="tab-absen" class="tab-pane hidden no-print">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div class="bg-white rounded-2xl border p-4 space-y-3.5">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 class="font-extrabold text-sm sm:text-base">Kamera Selfie Anti-Curang</h3>
+                <p class="text-[11px] text-slate-500">Wajib kamera langsung (otomatis diberi watermark)</p>
+              </div>
+              <span id="camera-status-badge" class="px-2.5 py-1 rounded-lg text-[10px] bg-amber-50 text-amber-700 font-bold">Menyiapkan...</span>
+            </div>
+
+            <div class="relative w-full aspect-video bg-slate-900 rounded-2xl overflow-hidden border-2 border-slate-200">
+              <video id="camera-stream" autoplay playsinline muted class="w-full h-full object-cover mirror-video"></video>
+              <img id="captured-photo-preview" alt="" class="hidden w-full h-full object-cover" />
+              <canvas id="camera-canvas" class="hidden"></canvas>
+              <div class="absolute bottom-2 left-2 right-2 bg-slate-900/80 backdrop-blur-xs text-white p-2 rounded-xl text-[10px] flex justify-between pointer-events-none">
+                <div class="truncate pr-2">
+                  <p id="cam-overlay-name" class="font-bold truncate">-</p>
+                  <p id="cam-overlay-gps" class="text-slate-300 font-mono">Mencari GPS...</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <p id="cam-overlay-jarak" class="font-bold text-emerald-400">- m</p>
+                  <p>Radius: <span id="cam-overlay-max-radius">-</span> m</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex gap-2">
+              <button id="btn-take-photo" onclick="capturePhoto()" class="flex-1 theme-bg theme-bg-hover text-white py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-sm">
+                <i class="fa-solid fa-camera mr-1"></i> Ambil Foto Selfie
+              </button>
+              <button id="btn-retake-photo" onclick="retakePhoto()" class="hidden flex-1 bg-slate-600 hover:bg-slate-700 text-white py-2.5 rounded-xl font-bold text-xs sm:text-sm">
+                <i class="fa-solid fa-rotate-left mr-1"></i> Foto Ulang
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border p-4 space-y-4 flex flex-col justify-between">
+            <div class="space-y-3.5">
+              <div class="p-3 bg-slate-50 border rounded-xl text-xs space-y-1">
+                <div class="flex justify-between font-bold text-slate-600">
+                  <span id="live-clock">-</span>
+                  <button type="button" onclick="detectLocation()" class="theme-text font-extrabold"><i class="fa-solid fa-location-crosshairs"></i> Update GPS</button>
+                </div>
+                <p id="gps-coord-text" class="font-mono font-bold text-slate-900">Mendeteksi titik koordinat...</p>
+                <p class="text-slate-500 pt-1 border-t">
+                  Cabang <span id="info-cabang-nama" class="font-bold text-slate-800">-</span> · Jam Kerja <span id="info-jam" class="font-bold text-slate-800">-</span>
+                </p>
+                <p class="text-slate-500">
+                  Jarak ke Kantor: <span id="gps-distance-badge" class="font-bold text-slate-800">-</span>
+                </p>
+                <div id="izin-bebas-badge" class="hidden mt-1 text-center bg-blue-100 text-blue-800 py-1 rounded-lg font-bold text-[10px]">
+                  <i class="fa-solid fa-plane-departure"></i> Akun Anda Memiliki Izin Bebas Radius Lokasi
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">Pilih Jenis Presensi:</label>
+                <div class="grid grid-cols-5 gap-1.5">
+                  <label class="cursor-pointer">
+                    <input type="radio" name="tipe_absen" value="Masuk" checked onchange="onTipeChange()" class="peer sr-only" />
+                    <div class="p-2 rounded-xl border peer-checked:border-emerald-600 peer-checked:bg-emerald-50 peer-checked:text-emerald-900 text-center font-bold text-[11px] transition">
+                      <i class="fa-solid fa-right-to-bracket text-emerald-600 mb-0.5 text-base block"></i> Masuk
+                    </div>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" name="tipe_absen" value="Pulang" onchange="onTipeChange()" class="peer sr-only" />
+                    <div class="p-2 rounded-xl border peer-checked:border-amber-600 peer-checked:bg-amber-50 peer-checked:text-amber-900 text-center font-bold text-[11px] transition">
+                      <i class="fa-solid fa-person-walking-arrow-right text-amber-600 mb-0.5 text-base block"></i> Pulang
+                    </div>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" name="tipe_absen" value="DL" onchange="onTipeChange()" class="peer sr-only" />
+                    <div class="p-2 rounded-xl border peer-checked:border-purple-600 peer-checked:bg-purple-50 peer-checked:text-purple-900 text-center font-bold text-[11px] transition" title="Dinas Luar">
+                      <i class="fa-solid fa-briefcase text-purple-600 mb-0.5 text-base block"></i> DL
+                    </div>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" name="tipe_absen" value="Izin" onchange="onTipeChange()" class="peer sr-only" />
+                    <div class="p-2 rounded-xl border peer-checked:border-blue-600 peer-checked:bg-blue-50 peer-checked:text-blue-900 text-center font-bold text-[11px] transition">
+                      <i class="fa-solid fa-file-lines text-blue-600 mb-0.5 text-base block"></i> Izin
+                    </div>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" name="tipe_absen" value="Sakit" onchange="onTipeChange()" class="peer sr-only" />
+                    <div class="p-2 rounded-xl border peer-checked:border-rose-600 peer-checked:bg-rose-50 peer-checked:text-rose-900 text-center font-bold text-[11px] transition">
+                      <i class="fa-solid fa-notes-medical text-rose-600 mb-0.5 text-base block"></i> Sakit
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div id="alasan-wrap" class="hidden text-xs font-bold">
+                <span id="alasan-label">Kategori Alasan / Kegiatan</span>
+                <select id="absen-alasan" class="w-full mt-1 p-2.5 border rounded-xl bg-white"></select>
+                <p id="alasan-help" class="font-normal text-slate-500 mt-1 text-[11px]"></p>
+              </div>
+
+              <textarea id="absen-keterangan" rows="2" maxlength="250" placeholder="Catatan / Lokasi Tujuan Dinas Luar / Nomor SPT (opsional)..." class="w-full p-2.5 border rounded-xl text-xs outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+
+            <button id="btn-submit-absen" onclick="submitAttendance()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md text-xs sm:text-sm transition active:scale-[0.99]">
+              <i class="fa-solid fa-paper-plane mr-1"></i> Kirim Presensi Sekarang
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TAB REKAP & CETAK ===== -->
+      <section id="tab-rekap" class="tab-pane hidden space-y-5">
+        <div class="no-print bg-white p-4 rounded-2xl border space-y-3 text-xs font-bold">
+          <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-2.5">
+            <label id="w-f-cabang">Cabang<select id="f-cabang" onchange="onCabangFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 mt-1"></select></label>
+            <label>Bulan<select id="f-bulan" onchange="loadRekap()" class="w-full p-2 border rounded-lg bg-slate-50 mt-1">
+              <option value="01">Januari</option><option value="02">Februari</option><option value="03">Maret</option><option value="04">April</option><option value="05">Mei</option><option value="06">Juni</option><option value="07">Juli</option><option value="08">Agustus</option><option value="09">September</option><option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option></select></label>
+            <label>Tahun<select id="f-tahun" onchange="loadRekap()" class="w-full p-2 border rounded-lg bg-slate-50 mt-1"></select></label>
+            <label id="w-f-pegawai">Pegawai<select id="f-pegawai" onchange="loadRekap()" class="w-full p-2 border rounded-lg bg-slate-50 mt-1"><option value="ALL">Semua Pegawai</option></select></label>
+            <label>Tipe Presensi<select id="f-tipe" onchange="renderRekap()" class="w-full p-2 border rounded-lg bg-slate-50 mt-1">
+              <option value="ALL">Semua Tipe</option>
+              <option value="Masuk">Masuk</option>
+              <option value="Pulang">Pulang</option>
+              <option value="DL">Dinas Luar (DL)</option>
+              <option value="Izin">Izin</option>
+              <option value="Sakit">Sakit</option>
+            </select></label>
+            <label>Status Waktu<select id="f-status" onchange="renderRekap()" class="w-full p-2 border rounded-lg bg-slate-50 mt-1">
+              <option value="ALL">Semua Status</option>
+              <option>Tepat Waktu</option>
+              <option>Terlambat</option>
+              <option>Normal</option>
+              <option>Pulang Cepat</option>
+              <option>Dinas Luar</option>
+            </select></label>
+            <label>Lokasi<select id="f-lokasi" onchange="renderRekap()" class="w-full p-2 border rounded-lg bg-slate-50 mt-1">
+              <option value="ALL">Semua Lokasi</option>
+              <option value="DALAM">Dalam Radius</option>
+              <option value="LUAR">Luar Radius</option>
+            </select></label>
+            <label>Tampilan<select id="f-mode" onchange="renderRekap()" class="w-full p-2 border rounded-lg bg-slate-50 mt-1">
+              <option value="detail">Detail Log</option>
+              <option value="ringkas">Ringkasan per Pegawai</option>
+            </select></label>
+            <label>Foto di Cetakan<select id="f-foto" onchange="renderRekap()" class="w-full p-2 border rounded-lg bg-slate-50 mt-1">
+              <option value="Tidak">Tanpa Foto</option>
+              <option value="Ya">Sertakan Foto</option>
+            </select></label>
+          </div>
+          <div class="flex flex-wrap gap-2 justify-between items-center pt-1">
+            <p id="rekap-note" class="font-normal text-slate-500"></p>
+            <div class="flex flex-wrap gap-2">
+              <button id="btn-email-rekap" onclick="handleSendEmailReportNow()" class="hidden px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl">
+                <i class="fa-solid fa-envelope-circle-check mr-1"></i> Kirim ke Email
+              </button>
+              <button onclick="exportCSV()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 border rounded-xl">
+                <i class="fa-solid fa-file-csv mr-1"></i> CSV
+              </button>
+              <button onclick="window.print()" class="px-3.5 py-2 theme-bg text-white rounded-xl">
+                <i class="fa-solid fa-print mr-1"></i> Cetak Laporan
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="rekap-cards" class="no-print grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5"></div>
+
+        <div id="print-area" class="print-container bg-white rounded-2xl border p-4 sm:p-6 text-xs no-foto-print">
+          <div class="print-only mb-3 text-center">
+            <h2 id="print-instansi" class="text-xl font-bold uppercase"></h2>
+            <p class="text-sm font-bold" id="print-title">LAPORAN ABSENSI</p>
+            <p id="print-sub" class="text-xs"></p>
+            <hr class="border-black mt-2" />
+          </div>
+          <div class="overflow-x-auto">
+            <table id="tbl-detail" class="w-full text-left border-collapse border">
+              <thead class="bg-slate-100">
+                <tr>
+                  <th class="p-2 border">Waktu</th>
+                  <th class="p-2 border">Nama</th>
+                  <th class="p-2 border">Cabang</th>
+                  <th class="p-2 border">Tipe & Status</th>
+                  <th class="p-2 border">Lokasi</th>
+                  <th class="p-2 border text-center col-foto">Foto</th>
+                  <th class="p-2 border">Keterangan</th>
+                  <th id="th-aksi-rekap" class="no-print p-2 border text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="rekap-detail-tbody"></tbody>
+            </table>
+            <table id="tbl-ringkas" class="hidden w-full text-left border-collapse border">
+              <thead class="bg-slate-100">
+                <tr>
+                  <th class="p-2 border">No</th>
+                  <th class="p-2 border">Nama Pegawai</th>
+                  <th class="p-2 border">Cabang</th>
+                  <th class="p-2 border text-center">Hari Hadir</th>
+                  <th class="p-2 border text-center">Terlambat</th>
+                  <th class="p-2 border text-center">Pulang Cepat</th>
+                  <th class="p-2 border text-center">DL</th>
+                  <th class="p-2 border text-center">Izin</th>
+                  <th class="p-2 border text-center">Sakit</th>
+                  <th class="p-2 border text-center">Luar Radius</th>
+                </tr>
+              </thead>
+              <tbody id="rekap-ringkas-tbody"></tbody>
+            </table>
+          </div>
+          <div class="print-only mt-8 flex justify-between text-xs">
+            <div>
+              <p id="print-meta"></p>
+              <p class="text-[10px] mt-1">Sistem Presensi Digital — <strong>Lisensi by Arraihan Academy (SWK)</strong></p>
+            </div>
+            <div class="text-center w-56">
+              <p>Mengetahui,</p>
+              <p id="print-ttd-role" class="mb-14"></p>
+              <p class="border-t border-black pt-1">( ............................ )</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TAB AKUN, MULTI-AKUN & RESET HP (SUPERADMIN) ===== -->
+      <section id="tab-users" class="tab-pane hidden space-y-6 no-print">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-4 bg-white rounded-2xl border p-5 space-y-3.5 self-start">
+            <h3 id="user-form-title" class="font-extrabold text-slate-800">Tambah Akun Pegawai</h3>
+            <form id="user-form" onsubmit="handleSaveUser(event)" class="space-y-3 text-xs">
+              <input type="hidden" id="form-user-id" />
+              <input type="text" id="form-user-nama" required maxlength="60" placeholder="Nama Lengkap & Gelar" class="w-full p-2.5 bg-slate-50 border rounded-xl" />
+              <input type="text" id="form-user-username" required maxlength="30" autocapitalize="none" placeholder="Username (huruf kecil/angka)" class="w-full p-2.5 bg-slate-50 border rounded-xl" />
+              <input type="text" id="form-user-password" autocomplete="off" placeholder="Password (min. 6 karakter)" class="w-full p-2.5 bg-slate-50 border rounded-xl" />
+              <p id="pw-hint" class="text-[10px] text-slate-500 -mt-1">Pengguna wajib menggantinya saat login pertama.</p>
+              <label class="block font-bold">Penempatan Cabang<select id="form-user-cabang" required class="w-full mt-1 p-2.5 bg-white border rounded-xl font-bold"></select></label>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="block font-bold">Role<select id="form-user-role" class="w-full mt-1 p-2 bg-slate-50 border rounded-xl">
+                  <option value="Pegawai">Pegawai</option><option value="Admin">Admin Cabang</option><option value="Superadmin">Superadmin</option>
+                </select></label>
+                <label class="block font-bold">Status<select id="form-user-status" class="w-full mt-1 p-2 bg-slate-50 border rounded-xl">
+                  <option value="Aktif">Aktif</option><option value="Nonaktif">Nonaktif</option>
+                </select></label>
+              </div>
+              <label class="block p-3 bg-blue-50 border border-blue-200 rounded-xl font-bold text-blue-900">Izin Absen Bebas Radius Lokasi?
+                <select id="form-user-bebas" class="w-full mt-1 p-2 bg-white border rounded-xl text-slate-800">
+                  <option value="Tidak">TIDAK (wajib di radius cabang)</option>
+                  <option value="Ya">YA (bebas dari mana saja)</option>
+                </select>
+              </label>
+
+              <!-- OPSI BARU: IZIN 1 HP UNTUK LEBIH DARI 1 AKUN (PEGAWAI LINTAS CABANG) -->
+              <label class="block p-3 bg-purple-50 border border-purple-200 rounded-xl font-bold text-purple-900">
+                <span><i class="fa-solid fa-users-viewfinder mr-1"></i> Izin 1 HP Lebih dari 1 Akun?</span>
+                <p class="text-[10px] font-normal text-purple-700 mt-0.5">Aktifkan (YA) jika pegawai ini bertugas di >1 cabang (punya beberapa akun di 1 HP yang sama).</p>
+                <select id="form-user-multi-akun" class="w-full mt-1.5 p-2 bg-white border rounded-xl text-slate-800">
+                  <option value="Tidak">TOLAK (1 HP Khusus 1 Akun Ini Saja)</option>
+                  <option value="Ya">BOLEHKAN (Bisa Dipakai Bersama Akun Lain di 1 HP)</option>
+                </select>
+              </label>
+
+              <label id="wrap-reset-device" class="hidden block p-3 bg-amber-50 border border-amber-200 rounded-xl font-bold text-amber-900">Reset Kunci HP Pegawai?
+                <select id="form-user-reset-device" class="w-full mt-1 p-2 bg-white border rounded-xl text-slate-800">
+                  <option value="Tidak">Tetap Kunci di HP Saat Ini</option>
+                  <option value="Ya">Reset HP (Izinkan Login di HP Baru)</option>
+                </select>
+              </label>
+
+              <div class="flex gap-2 pt-1">
+                <button type="submit" class="flex-1 theme-bg text-white font-bold py-2.5 rounded-xl">Simpan Akun</button>
+                <button type="button" onclick="resetUserForm()" class="px-3 bg-slate-100 rounded-xl font-bold">Batal</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="lg:col-span-8 bg-white rounded-2xl border p-4 space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-bold">
+              <label>Cabang<select id="uf-cabang" onchange="renderUsers()" class="w-full mt-1 p-2 border rounded-lg bg-slate-50"></select></label>
+              <label>Role<select id="uf-role" onchange="renderUsers()" class="w-full mt-1 p-2 border rounded-lg bg-slate-50">
+                <option value="ALL">Semua Role</option><option>Pegawai</option><option>Admin</option><option>Superadmin</option>
+              </select></label>
+              <label>Cari<input id="uf-q" oninput="renderUsers()" placeholder="Nama / username" class="w-full mt-1 p-2 border rounded-lg bg-slate-50 font-normal" /></label>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 uppercase text-[10px]">
+                  <tr>
+                    <th class="p-3">Nama & Cabang</th>
+                    <th class="p-3">Role & Hak Khusus</th>
+                    <th class="p-3">Status HP (Anti-Curang)</th>
+                    <th class="p-3 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="users-tbody" class="divide-y"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TAB CABANG (SUPERADMIN) ===== -->
+      <section id="tab-cabang" class="tab-pane hidden space-y-6 no-print">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-5 bg-white rounded-2xl border p-5 space-y-4 self-start">
+            <div class="flex justify-between items-center">
+              <h3 id="cabang-form-title" class="font-extrabold text-slate-800">Tambah Cabang Baru</h3>
+              <button type="button" onclick="resetCabangForm()" class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold"><i class="fa-solid fa-plus"></i> Baru</button>
+            </div>
+            <p class="text-[11px] text-slate-500">Semua cabang otomatis tersimpan di <strong>1 Folder Drive Terpadu</strong> dan memiliki tab sheet masing-masing (<code>Absen_CABxx</code>).</p>
+            <form onsubmit="handleSaveCabang(event)" class="space-y-3 text-xs">
+              <input type="hidden" id="cb-kode" />
+              <div id="cb-kode-info" class="hidden p-2 bg-slate-100 rounded-lg font-mono font-bold"></div>
+              <label class="block font-bold">Nama Cabang / UPTD<input type="text" id="cb-nama" required maxlength="50" placeholder="Contoh: UPTD Puskesmas Sukadana" class="w-full mt-1 p-2.5 border rounded-xl" /></label>
+              <div class="flex justify-between items-center border-t pt-3">
+                <span class="font-bold">Koordinat GPS Cabang</span>
+                <button type="button" onclick="setCenterToCurrentGPS()" class="theme-bg text-white px-2.5 py-1 rounded-lg text-[10px] font-bold"><i class="fa-solid fa-location-dot"></i> Ambil Lokasi Saya</button>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <input type="text" id="cb-lat" required inputmode="decimal" placeholder="Latitude" class="p-2.5 border rounded-xl" />
+                <input type="text" id="cb-lng" required inputmode="decimal" placeholder="Longitude" class="p-2.5 border rounded-xl" />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="block font-bold">Radius Maks<select id="cb-radius" class="w-full mt-1 p-2.5 border rounded-xl bg-white"></select></label>
+                <label class="block font-bold">Zona Waktu<select id="cb-zona" class="w-full mt-1 p-2.5 border rounded-xl bg-white">
+                  <option value="WIB">WIB (UTC+7)</option><option value="WITA">WITA (UTC+8)</option><option value="WIT">WIT (UTC+9)</option>
+                </select></label>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="block font-bold">Jam Masuk<input type="time" id="cb-masuk" required value="08:00" class="w-full mt-1 p-2.5 border rounded-xl" /></label>
+                <label class="block font-bold">Jam Pulang<input type="time" id="cb-pulang" required value="17:00" class="w-full mt-1 p-2.5 border rounded-xl" /></label>
+              </div>
+              <label class="block font-bold">Status<select id="cb-status" class="w-full mt-1 p-2.5 border rounded-xl bg-white">
+                <option value="Aktif">Aktif</option><option value="Nonaktif">Nonaktif (pegawai tidak bisa login)</option>
+              </select></label>
+              <button type="submit" class="w-full theme-bg text-white font-bold py-3 rounded-xl shadow-md">Simpan Cabang</button>
+            </form>
+          </div>
+
+          <div class="lg:col-span-7 bg-white rounded-2xl border p-4 space-y-3">
+            <div class="flex flex-wrap justify-between items-center gap-2">
+              <h3 class="font-extrabold">Daftar Cabang & Penyimpanan Terpadu</h3>
+              <div class="flex gap-3">
+                <a id="link-folder" target="_blank" rel="noopener" class="hidden text-xs font-bold text-amber-600"><i class="fa-solid fa-folder-open"></i> Folder Drive Utama</a>
+                <a id="link-ss" target="_blank" rel="noopener" class="hidden text-xs font-bold theme-text"><i class="fa-solid fa-table"></i> Database Sheet</a>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 uppercase text-[10px]">
+                  <tr>
+                    <th class="p-3">Cabang</th>
+                    <th class="p-3">Jam / Radius</th>
+                    <th class="p-3 text-center">Akun</th>
+                    <th class="p-3 text-center">Catatan</th>
+                    <th class="p-3 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="cabang-tbody" class="divide-y"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TAB PENGATURAN GLOBAL (SUPERADMIN) ===== -->
+      <section id="tab-settings" class="tab-pane hidden no-print">
+        <div class="max-w-3xl mx-auto bg-white rounded-2xl border p-5 sm:p-6 space-y-6">
+          <div>
+            <h3 class="font-extrabold text-base text-slate-800"><i class="fa-solid fa-sliders theme-text mr-1"></i> Pengaturan Global, Pejabat, Anti-Curang & Laporan Email</h3>
+            <p class="text-xs text-slate-500">Seluruh gambar yang diunggah otomatis tersimpan di dalam 1 Folder Drive Utama aplikasi.</p>
+          </div>
+
+          <form onsubmit="handleSaveSettings(event)" class="space-y-5 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <label class="block font-bold text-slate-600">Nama Instansi / Aplikasi
+                <input type="text" id="set-nama-instansi" required maxlength="80" class="w-full mt-1 p-2.5 bg-slate-50 border rounded-xl font-bold" />
+              </label>
+              <label class="block font-bold text-slate-600">Sub-Judul Halaman Login
+                <input type="text" id="set-sub-judul" maxlength="120" class="w-full mt-1 p-2.5 bg-slate-50 border rounded-xl" />
+              </label>
+            </div>
+
+            <!-- Input Logo Instansi -->
+            <div class="p-4 border rounded-2xl bg-slate-50/60 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-extrabold text-slate-700"><i class="fa-solid fa-shield-cat mr-1"></i> Logo Instansi / Daerah (Opsional)</span>
+                <button type="button" onclick="$('set-logo-url').value='';applyLogoElements('');" class="text-rose-600 font-bold text-[11px]"><i class="fa-solid fa-xmark"></i> Kosongkan Logo</button>
+              </div>
+              <div class="flex flex-col sm:flex-row gap-3 items-center">
+                <img id="set-logo-preview" alt="" class="w-14 h-14 object-contain rounded-xl border bg-white p-1 hidden shrink-0" />
+                <div class="flex-1 w-full space-y-2">
+                  <input type="text" id="set-logo-url" placeholder="https://... (atau klik Unggah File di bawah)" class="w-full p-2 border rounded-xl bg-white font-normal" oninput="applyLogoElements(this.value)" />
+                  <label class="cursor-pointer px-3 py-1.5 theme-bg text-white rounded-lg font-bold text-[11px] inline-flex items-center gap-1.5">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Unggah File Logo ke Drive
+                    <input type="file" accept="image/*" class="hidden" onchange="handleUploadAsset(this, 'LOGO', 'set-logo-url', applyLogoElements)" />
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Input Foto Bupati & Wakil Bupati -->
+            <div class="p-4 border rounded-2xl bg-slate-50/60 space-y-4">
+              <div>
+                <h4 class="font-extrabold text-slate-800"><i class="fa-solid fa-user-tie mr-1"></i> Foto Bupati & Wakil Bupati di Halaman Awal</h4>
+                <p class="text-[11px] text-slate-500">Bila foto dikosongkan, halaman login otomatis tampil bersih tanpa bingkai foto.</p>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-3.5 bg-white border rounded-xl space-y-2.5">
+                  <div class="flex justify-between items-center">
+                    <span class="font-bold text-slate-700">1. Foto & Nama Bupati</span>
+                    <button type="button" onclick="$('set-bupati-url').value='';$('set-bupati-nama').value='';previewPejabat();" class="text-rose-600 text-[11px] font-bold">Hapus</button>
+                  </div>
+                  <div class="flex gap-3 items-center">
+                    <img id="set-bupati-preview" alt="" class="w-14 h-18 object-cover rounded-lg border hidden shrink-0" />
+                    <div class="flex-1 space-y-1.5">
+                      <input type="text" id="set-bupati-nama" placeholder="Nama Bupati (opsional)" class="w-full p-2 border rounded-lg" oninput="previewPejabat()" />
+                      <input type="text" id="set-bupati-url" placeholder="URL Foto Bupati (https://...)" class="w-full p-2 border rounded-lg font-normal" oninput="previewPejabat()" />
+                    </div>
+                  </div>
+                  <label class="cursor-pointer px-3 py-1.5 bg-slate-800 text-white rounded-lg font-bold text-[11px] inline-flex items-center gap-1.5">
+                    <i class="fa-solid fa-upload"></i> Pilih Foto Bupati (Simpan ke Drive)
+                    <input type="file" accept="image/*" class="hidden" onchange="handleUploadAsset(this, 'BUPATI', 'set-bupati-url', previewPejabat)" />
+                  </label>
+                </div>
+
+                <div class="p-3.5 bg-white border rounded-xl space-y-2.5">
+                  <div class="flex justify-between items-center">
+                    <span class="font-bold text-slate-700">2. Foto & Nama Wakil Bupati</span>
+                    <button type="button" onclick="$('set-wabup-url').value='';$('set-wabup-nama').value='';previewPejabat();" class="text-rose-600 text-[11px] font-bold">Hapus</button>
+                  </div>
+                  <div class="flex gap-3 items-center">
+                    <img id="set-wabup-preview" alt="" class="w-14 h-18 object-cover rounded-lg border hidden shrink-0" />
+                    <div class="flex-1 space-y-1.5">
+                      <input type="text" id="set-wabup-nama" placeholder="Nama Wakil Bupati (opsional)" class="w-full p-2 border rounded-lg" oninput="previewPejabat()" />
+                      <input type="text" id="set-wabup-url" placeholder="URL Foto Wakil Bupati (https://...)" class="w-full p-2 border rounded-lg font-normal" oninput="previewPejabat()" />
+                    </div>
+                  </div>
+                  <label class="cursor-pointer px-3 py-1.5 bg-slate-800 text-white rounded-lg font-bold text-[11px] inline-flex items-center gap-1.5">
+                    <i class="fa-solid fa-upload"></i> Pilih Foto Wabup (Simpan ke Drive)
+                    <input type="file" accept="image/*" class="hidden" onchange="handleUploadAsset(this, 'WABUP', 'set-wabup-url', previewPejabat)" />
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- PENGATURAN ANTI-CURANG & MULTI-AKUN LINTAS CABANG -->
+            <div class="p-4 border border-purple-200 rounded-2xl bg-purple-50/50 space-y-3">
+              <h4 class="font-extrabold text-purple-950"><i class="fa-solid fa-mobile-screen-button mr-1"></i> Pengaturan Anti-Curang & Pegawai Multi-Cabang</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label class="block font-bold text-slate-700">Kunci Akun ke HP Masing-Masing?
+                  <select id="set-kunci-perangkat" class="w-full mt-1 p-2.5 border rounded-xl bg-white">
+                    <option value="Ya">AKTIF — Akun Terkunci di HP Pegawai</option>
+                    <option value="Tidak">NONAKTIF — Bebas Login di HP Mana Saja</option>
+                  </select>
+                </label>
+                <label class="block font-bold text-slate-700">Aturan 1 HP untuk Lebih dari 1 Akun
+                  <select id="set-multi-akun-global" class="w-full mt-1 p-2.5 border rounded-xl bg-white">
+                    <option value="Tidak">TOLAK KETAT (Kecuali Akun yang Diberi Izin di Menu Akun)</option>
+                    <option value="Ya">BOLEHKAN SEMUA (1 HP Bisa untuk Beberapa Akun Lintas Cabang)</option>
+                  </select>
+                </label>
+              </div>
+              <p class="text-[11px] text-purple-800">
+                💡 <strong>Tips:</strong> Pilih <em>"TOLAK KETAT"</em> agar pegawai biasa tidak bisa titip absen, lalu berikan izin khusus di menu <strong>Akun & HP</strong> hanya bagi pegawai yang bertugas di lebih dari 1 cabang.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <label class="block font-bold text-slate-600">Kewajiban di Dalam Radius Kantor
+                <select id="set-wajib-radius" class="w-full mt-1 p-2.5 border rounded-xl bg-white">
+                  <option value="Tidak">Toleransi (Dicatat "Luar Radius")</option>
+                  <option value="Ya">Ketat (Masuk/Pulang Ditolak di Luar Radius)</option>
+                </select>
+              </label>
+              <label class="block font-bold text-slate-600">Batas Toleransi Akurasi GPS
+                <select id="set-maks-akurasi" class="w-full mt-1 p-2.5 border rounded-xl bg-white">
+                  <option value="100">Ketat (±100 meter)</option>
+                  <option value="200">Normal (±200 meter)</option>
+                  <option value="500">Longgar (±500 meter)</option>
+                  <option value="1500">Sangat Longgar (±1500 meter)</option>
+                </select>
+              </label>
+              <label class="block font-bold text-slate-600">Warna Tema Aplikasi
+                <select id="set-warna-tema" onchange="applyThemePalette(this.value)" class="w-full mt-1 p-2.5 border rounded-xl bg-white">
+                  <option value="blue">Biru Pemerintah</option>
+                  <option value="emerald">Hijau Kesehatan</option>
+                  <option value="indigo">Indigo Korporat</option>
+                  <option value="rose">Merah Marun</option>
+                </select>
+              </label>
+            </div>
+
+            <!-- Laporan Email Otomatis Setiap Tanggal Akhir Bulan -->
+            <div class="p-4 border border-amber-200 rounded-2xl bg-amber-50/60 space-y-3">
+              <h4 class="font-extrabold text-amber-900"><i class="fa-solid fa-envelope-open-text mr-1"></i> Laporan Email Otomatis Setiap Akhir Bulan</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label class="block font-bold text-slate-700">Email Penerima Laporan (pisahkan koma jika > 1)
+                  <input type="text" id="set-email-laporan" placeholder="contoh: kadis@pemda.go.id, tu@puskesmas.id" class="w-full mt-1 p-2.5 border rounded-xl bg-white font-normal" />
+                </label>
+                <label class="block font-bold text-slate-700">Kirim Otomatis Setiap Tanggal Akhir Bulan?
+                  <select id="set-auto-email" class="w-full mt-1 p-2.5 border rounded-xl bg-white">
+                    <option value="Tidak">Tidak (Kirim Manual Saja)</option>
+                    <option value="Ya">Ya (Otomatis Setiap Tanggal Terakhir Bulan pkl 21.00 WIB)</option>
+                  </select>
+                </label>
+              </div>
+              <div class="flex justify-end">
+                <button type="button" onclick="handleTestEmailSettings()" class="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-[11px]">
+                  <i class="fa-solid fa-paper-plane mr-1"></i> Tes Kirim Laporan Bulan Ini Sekarang
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="w-full theme-bg theme-bg-hover text-white font-bold py-3.5 rounded-xl shadow-md">
+              <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan Seluruh Pengaturan
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ===== TAB PROFIL ===== -->
+      <section id="tab-profil" class="tab-pane hidden no-print">
+        <div class="max-w-md mx-auto bg-white rounded-2xl border p-6 space-y-5">
+          <div id="force-pw-banner" class="hidden p-3 bg-amber-50 border border-amber-300 text-amber-800 rounded-xl text-xs font-semibold">
+            <i class="fa-solid fa-triangle-exclamation"></i> Demi keamanan, ganti password awal Anda terlebih dahulu sebelum memakai aplikasi.
+          </div>
+          <div class="p-3.5 bg-slate-50 border rounded-xl text-xs space-y-1">
+            <p class="font-bold text-slate-700">Identitas Perangkat Terdaftar (Anti-Curang)</p>
+            <p id="profil-device-id" class="font-mono text-[11px] text-blue-700 font-bold">-</p>
+            <p id="profil-multi-status" class="text-[11px] font-semibold text-slate-600">-</p>
+          </div>
+          <h4 class="font-extrabold uppercase text-sm">Ganti Password Akun</h4>
+          <form onsubmit="handleChangePassword(event)" class="space-y-3 text-xs">
+            <input type="password" id="old-password" required autocomplete="current-password" placeholder="Password Saat Ini" class="w-full p-2.5 border rounded-xl" />
+            <input type="password" id="new-password" required minlength="6" autocomplete="new-password" placeholder="Password Baru (min. 6 karakter)" class="w-full p-2.5 border rounded-xl" />
+            <input type="password" id="confirm-password" required autocomplete="new-password" placeholder="Ulangi Password Baru" class="w-full p-2.5 border rounded-xl" />
+            <button type="submit" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl">Perbarui Password</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="no-print border-t bg-white py-3 px-4 text-center text-[11px] text-slate-500">
+      <span id="footer-instansi" class="font-semibold">Absensi Digital</span> · <span class="inline-flex items-center gap-1"><i class="fa-solid fa-certificate text-amber-500"></i> Lisensi by <strong>Arraihan Academy (SWK)</strong></span>
+    </footer>
+  </div>
+
+  <!-- MODAL PRATINJAU FOTO -->
+  <div id="photo-modal" onclick="closePhotoModal()" class="no-print hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden border shadow-2xl" onclick="event.stopPropagation()">
+      <img id="modal-photo-img" src="" alt="Foto absensi" class="w-full max-h-[75vh] object-contain bg-black" />
+      <div class="p-3 flex justify-between items-center bg-white">
+        <a id="modal-photo-download" href="#" target="_blank" rel="noopener" class="px-3 py-1.5 theme-bg text-white rounded-lg text-xs font-bold"><i class="fa-solid fa-download mr-1"></i> Buka / Unduh</a>
+        <button onclick="closePhotoModal()" class="px-4 py-1.5 bg-slate-200 text-slate-800 rounded-lg text-xs font-bold">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Keluar dari kontainer pembungkus Blogger secara otomatis
+(function () {
+  const w = document.getElementById("app-fullscreen-wrapper");
+  if (w && w.parentNode !== document.body) document.body.appendChild(w);
+})();
+
+// ============================================================
+// KONFIGURASI URL BACKEND GAS
+// ============================================================
+const GAS_URL = "https://script.google.com/macros/s/AKfycby1LYb2uTdjdGYVb09Wlma6G37oNr5rMr7jP0wdO1-55ur_Ok8TXvny97pgnDF7QCtk/exec";   // <-- Tempel URL /exec Web App GAS Anda di sini
+
+const ROLE_TABS = {
+  Pegawai:    ["tab-absen", "tab-rekap", "tab-profil"],
+  Admin:      ["tab-dashboard", "tab-absen", "tab-rekap", "tab-profil"],
+  Superadmin: ["tab-dashboard", "tab-absen", "tab-rekap", "tab-users", "tab-cabang", "tab-settings", "tab-profil"]
+};
+const TAB_META = {
+  "tab-dashboard": ["fa-chart-pie", "Dashboard"],
+  "tab-absen":     ["fa-camera", "Presensi"],
+  "tab-rekap":     ["fa-print", "Rekap & Cetak"],
+  "tab-users":     ["fa-users-gear", "Akun & HP"],
+  "tab-cabang":    ["fa-building-shield", "Cabang"],
+  "tab-settings":  ["fa-sliders", "Pengaturan"],
+  "tab-profil":    ["fa-user-lock", "Profil"]
+};
+const ZONA_TZ = { WIB: "Asia/Jakarta", WITA: "Asia/Makassar", WIT: "Asia/Jayapura" };
+const RADIUS_OPTIONS = [50, 100, 150, 200, 300, 500, 1000, 2000];
+const ALASAN = {
+  DL: [
+    "Rapat / Koordinasi Instansi",
+    "Kunjungan Lapangan / Pelayanan Luar",
+    "Bimtek / Pelatihan / Sosialisasi",
+    "Tugas Khusus Pimpinan",
+    "Dinas Luar Lainnya"
+  ],
+  Izin: ["Keperluan Keluarga", "Urusan Pribadi", "Cuti Tahunan / Penting", "Acara Resmi", "Lainnya"],
+  Sakit: ["Demam / Flu / Istirahat Medis", "Kontrol Dokter / Puskesmas / RS", "Rawat Inap", "Sakit Lainnya"]
+};
+const BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+const THEME_PALETTES = {
+  blue:    { primary:"#2563eb", hover:"#1d4ed8", light:"#eff6ff", border:"#bfdbfe", gradStart:"#0f172a", gradMid:"#1e3a8a" },
+  emerald: { primary:"#059669", hover:"#047857", light:"#ecfdf5", border:"#a7f3d0", gradStart:"#064e3b", gradMid:"#022c22" },
+  indigo:  { primary:"#4f46e5", hover:"#4338ca", light:"#eef2ff", border:"#c7d2fe", gradStart:"#1e1b4b", gradMid:"#312e81" },
+  rose:    { primary:"#e11d48", hover:"#be123c", light:"#fff1f2", border:"#fecdd3", gradStart:"#4c0519", gradMid:"#881337" }
+};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const safeUrl = u => /^https:\/\//i.test(u || "") ? u : "";
+const isSuper = () => user && user.Role === "Superadmin";
+
+let token = sessionStorage.getItem("abs_tok") || "";
+let user = null;
+let settings = {
+  Nama_Instansi: "Absensi Digital",
+  Sub_Judul_Instansi: "Sistem Presensi Geotagging & Anti-Curang Terpadu",
+  Logo_URL: "",
+  Foto_Bupati_URL: "",
+  Nama_Bupati: "",
+  Foto_Wabup_URL: "",
+  Nama_Wabup: "",
+  Warna_Tema: "blue",
+  Wajib_Dalam_Radius: "Tidak",
+  Kunci_Perangkat: "Ya",
+  Izinkan_Satu_HP_Multi_Akun: "Tidak",
+  Maks_Akurasi_GPS: "200",
+  Email_Laporan: "",
+  Auto_Email_Akhir_Bulan: "Tidak"
+};
+let cabangList = [], usersList = [], cabangAdminList = [], rekapRows = [], pegawaiList = [];
+let userLoc = { lat: null, lng: null, acc: null, dist: null };
+let capturedBase64 = null, videoStream = null, clockTimer = null, rekapInit = false;
+let deviceIdentity = { id: "", info: "" };
+
+// ============================================================
+// IDENTITAS PERANGKAT ANTI-CURANG
+// ============================================================
+function initDeviceIdentity() {
+  let savedId = localStorage.getItem("abs_device_uid");
+  if (!savedId) {
+    const rawFp = [
+      navigator.userAgent,
+      navigator.platform,
+      screen.width + "x" + screen.height,
+      screen.colorDepth,
+      window.devicePixelRatio || 1,
+      navigator.hardwareConcurrency || 2
+    ].join("|");
+    let hash = 0;
+    for (let i = 0; i < rawFp.length; i++) {
+      hash = ((hash << 5) - hash) + rawFp.charCodeAt(i);
+      hash |= 0;
+    }
+    const rand = Math.random().toString(36).substring(2, 8).toUpperCase();
+    savedId = "HP-" + Math.abs(hash).toString(16).toUpperCase().padStart(6, "0") + "-" + rand;
+    localStorage.setItem("abs_device_uid", savedId);
+  }
+  const ua = navigator.userAgent;
+  const os = /Android/i.test(ua) ? "Android" : /iPhone|iPad/i.test(ua) ? "iOS" : /Windows/i.test(ua) ? "Windows" : /Mac/i.test(ua) ? "Mac" : "Device";
+  const br = /Chrome/i.test(ua) && !/Edg/i.test(ua) ? "Chrome" : /Safari/i.test(ua) && !/Chrome/i.test(ua) ? "Safari" : /Firefox/i.test(ua) ? "Firefox" : "Browser";
+  deviceIdentity = {
+    id: savedId,
+    info: `${os} ${br} (${screen.width}x${screen.height})`
+  };
+  if ($("login-device-label")) $("login-device-label").textContent = `${deviceIdentity.id} · ${deviceIdentity.info}`;
+  if ($("profil-device-id")) $("profil-device-id").textContent = `${deviceIdentity.id} (${deviceIdentity.info})`;
+}
+
+// ============================================================
+// DARK MODE
+// ============================================================
+function initDarkMode() {
+  const dark = localStorage.getItem("abs_dark") === "1";
+  document.documentElement.classList.toggle("dark", dark);
+  updateDarkIcons(dark);
+}
+function toggleDarkMode() {
+  const isDark = document.documentElement.classList.toggle("dark");
+  localStorage.setItem("abs_dark", isDark ? "1" : "0");
+  updateDarkIcons(isDark);
+}
+function updateDarkIcons(isDark) {
+  ["dark-icon-login", "dark-icon-main"].forEach(id => {
+    const el = $(id);
+    if (el) el.className = isDark ? "fa-solid fa-sun text-amber-400" : "fa-solid fa-moon";
+  });
+}
+
+function showLoading(t) { $("loading-text").textContent = t || "Memproses..."; $("loading-overlay").classList.remove("hidden"); }
+function hideLoading() { $("loading-overlay").classList.add("hidden"); }
+function showToast(msg, type = "success") {
+  const c = $("toast-content");
+  $("toast-msg").textContent = msg;
+  $("toast-icon").className = type === "error" ? "fa-solid fa-triangle-exclamation text-lg" : "fa-solid fa-circle-check text-lg";
+  c.className = "flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl text-white text-xs sm:text-sm font-semibold " + (type === "error" ? "bg-rose-600" : "bg-emerald-600");
+  $("toast-box").classList.remove("hidden");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => $("toast-box").classList.add("hidden"), 4000);
+}
+function togglePw(id, btn) {
+  const i = $(id);
+  i.type = i.type === "password" ? "text" : "password";
+  btn.firstElementChild.className = i.type === "password" ? "fa-solid fa-eye" : "fa-solid fa-eye-slash";
+}
+
+async function api(action, payload = {}) {
+  let res;
+  try {
+    res = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action, token, deviceId: deviceIdentity.id, deviceInfo: deviceIdentity.info, ...payload })
+    });
+  } catch (e) {
+    throw new Error("Tidak dapat terhubung ke server. Periksa koneksi internet / URL GAS.");
+  }
+  let j;
+  try { j = await res.json(); } catch (e) { throw new Error("Respons server tidak valid. Pastikan Web App GAS di-deploy dengan akses 'Anyone'."); }
+  if (!j.success) {
+    if (j.code === "AUTH") {
+      sessionStorage.removeItem("abs_tok");
+      sessionStorage.setItem("abs_msg", j.message || "Sesi berakhir.");
+      location.reload();
+    }
+    throw new Error(j.message || "Terjadi kesalahan.");
+  }
+  return j;
+}
+
+async function run(label, fn) {
+  showLoading(label);
+  try { return await fn(); }
+  catch (e) { showToast(e.message, "error"); }
+  finally { hideLoading(); }
+}
+
+// ============================================================
+// BRANDING, LOGO & TAMPILAN BERSIH FOTO BUPATI/WABUP
+// ============================================================
+function applyThemePalette(k) {
+  const p = THEME_PALETTES[k] || THEME_PALETTES.blue, r = document.documentElement.style;
+  r.setProperty("--theme-primary", p.primary);
+  r.setProperty("--theme-hover", p.hover);
+  r.setProperty("--theme-light", p.light);
+  r.setProperty("--theme-border", p.border);
+  r.setProperty("--theme-grad-start", p.gradStart);
+  r.setProperty("--theme-grad-mid", p.gradMid);
+}
+
+function applyLogoElements(url) {
+  const u = safeUrl((url || "").trim());
+  ["login-logo-img", "nav-logo-img", "set-logo-preview"].forEach(id => {
+    const e = $(id);
+    if (!e) return;
+    e.src = u;
+    e.classList.toggle("hidden", !u);
+  });
+  ["login-logo-icon", "nav-logo-icon"].forEach(id => {
+    const e = $(id);
+    if (e) e.classList.toggle("hidden", !!u);
+  });
+}
+
+function applyPejabatElements(bupatiUrl, bupatiNama, wabupUrl, wabupNama) {
+  const uBup = safeUrl((bupatiUrl || "").trim());
+  const uWab = safeUrl((wabupUrl || "").trim());
+  const hasAny = Boolean(uBup || uWab);
+
+  const showcase = $("login-pejabat-showcase");
+  const grid = $("pejabat-grid");
+  const cBup = $("card-bupati");
+  const cWab = $("card-wabup");
+
+  showcase.classList.toggle("hidden", !hasAny);
+  if (grid) {
+    grid.className = (uBup && uWab)
+      ? "grid grid-cols-2 gap-4 items-stretch justify-center"
+      : "grid grid-cols-1 max-w-xs mx-auto gap-4 items-stretch justify-center";
+  }
+
+  if (uBup) {
+    $("login-bupati-img").src = uBup;
+    $("login-bupati-nama").textContent = (bupatiNama || "").trim() || "Bupati";
+    cBup.classList.remove("hidden");
+  } else {
+    cBup.classList.add("hidden");
+  }
+
+  if (uWab) {
+    $("login-wabup-img").src = uWab;
+    $("login-wabup-nama").textContent = (wabupNama || "").trim() || "Wakil Bupati";
+    cWab.classList.remove("hidden");
+  } else {
+    cWab.classList.add("hidden");
+  }
+
+  if ($("set-bupati-preview")) {
+    $("set-bupati-preview").src = uBup;
+    $("set-bupati-preview").classList.toggle("hidden", !uBup);
+  }
+  if ($("set-wabup-preview")) {
+    $("set-wabup-preview").src = uWab;
+    $("set-wabup-preview").classList.toggle("hidden", !uWab);
+  }
+}
+
+function previewPejabat() {
+  applyPejabatElements(
+    $("set-bupati-url").value,
+    $("set-bupati-nama").value,
+    $("set-wabup-url").value,
+    $("set-wabup-nama").value
+  );
+}
+
+function applyBranding() {
+  applyThemePalette(settings.Warna_Tema);
+  applyLogoElements(settings.Logo_URL);
+  applyPejabatElements(settings.Foto_Bupati_URL, settings.Nama_Bupati, settings.Foto_Wabup_URL, settings.Nama_Wabup);
+  document.title = settings.Nama_Instansi + " — Lisensi by Arraihan Academy (SWK)";
+  $("login-instansi-title").textContent = settings.Nama_Instansi;
+  $("login-instansi-sub").textContent = settings.Sub_Judul_Instansi || "Sistem Presensi Geotagging & Anti-Curang Terpadu";
+  $("nav-instansi-name").textContent = settings.Nama_Instansi;
+  $("print-instansi").textContent = settings.Nama_Instansi;
+  $("footer-instansi").textContent = settings.Nama_Instansi;
+
+  if ($("login-security-title")) {
+    if (settings.Kunci_Perangkat === "Tidak") {
+      $("login-security-title").textContent = "Mode Perangkat Fleksibel";
+    } else if (settings.Izinkan_Satu_HP_Multi_Akun === "Ya") {
+      $("login-security-title").textContent = "Anti-Curang Aktif (Mendukung Multi-Akun Lintas Cabang)";
+    } else {
+      $("login-security-title").textContent = "Proteksi Anti-Curang (1 HP = 1 Akun / Izin Khusus)";
+    }
+  }
+}
+
+function cabangOptions({ all = false, allLabel = "Semua Cabang", onlyActive = false } = {}) {
+  let h = all ? `<option value="ALL">${esc(allLabel)}</option>` : "";
+  h += cabangList.filter(c => !onlyActive || c.Status_Aktif === "Aktif")
+    .map(c => `<option value="${esc(c.Kode_Cabang)}">${esc(c.Nama_Cabang)}${c.Status_Aktif === "Nonaktif" ? " (nonaktif)" : ""}</option>`).join("");
+  return h;
+}
+const myCabang = () => cabangList.find(c => c.Kode_Cabang === user.Kode_Cabang) || null;
+
+// ============================================================
+// INIT & AUTH
+// ============================================================
+window.addEventListener("DOMContentLoaded", async () => {
+  initDarkMode();
+  initDeviceIdentity();
+
+  if (location.protocol !== "https:" && !/^(localhost|127\.)/.test(location.hostname)) {
+    $("https-warning").classList.remove("hidden");
+  }
+  const m = sessionStorage.getItem("abs_msg");
+  if (m) { sessionStorage.removeItem("abs_msg"); showToast(m, "error"); }
+
+  RADIUS_OPTIONS.forEach(r => $("cb-radius").insertAdjacentHTML("beforeend", `<option value="${r}">${r} meter</option>`));
+  $("cb-radius").value = "150";
+
+  if (token) {
+    showLoading("Memuat sesi...");
+    try { applySession(await api("me")); hideLoading(); enterApplication(); return; }
+    catch (e) { hideLoading(); token = ""; sessionStorage.removeItem("abs_tok"); }
+  }
+  try {
+    const r = await (await fetch(GAS_URL + "?action=getPublicSettings")).json();
+    if (r.success) { settings = { ...settings, ...r.settings }; applyBranding(); }
+  } catch (e) {}
+});
+
+function applySession(r) {
+  user = r.user;
+  settings = { ...settings, ...r.settings };
+  cabangList = r.cabangList || [];
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  await run("Memverifikasi Akun & Perangkat...", async () => {
+    const r = await api("login", {
+      username: $("login-username").value,
+      password: $("login-password").value
+    });
+    token = r.token;
+    sessionStorage.setItem("abs_tok", token);
+    applySession(r);
+    enterApplication();
+  });
+}
+
+async function handleLogout() {
+  stopCameraStream();
+  try { await api("logout"); } catch (e) {}
+  sessionStorage.removeItem("abs_tok");
+  location.reload();
+}
+
+function enterApplication() {
+  $("login-view").classList.add("hidden");
+  $("main-view").classList.remove("hidden");
+  applyBranding();
+  $("nav-user-name").textContent = user.Nama_Lengkap;
+  $("nav-user-role").textContent = user.Role === "Admin" ? "Admin Cabang" : user.Role;
+  $("nav-cabang-badge").textContent = user.Nama_Cabang;
+  const allowMulti = user.Izin_Multi_Akun === "Ya" || settings.Izinkan_Satu_HP_Multi_Akun === "Ya";
+  $("nav-multi-badge").classList.toggle("hidden", !allowMulti);
+  $("profil-device-id").textContent = `${deviceIdentity.id} (${deviceIdentity.info})`;
+  $("profil-multi-status").textContent = allowMulti
+    ? "✅ Diizinkan Multi-Akun Lintas Cabang pada HP ini."
+    : "🔒 Terkunci eksklusif 1 HP untuk 1 Akun.";
+  buildTabs();
+  updateAbsenInfo();
+  clearInterval(clockTimer);
+  clockTimer = setInterval(tickClock, 1000);
+  tickClock();
+  if (user.Wajib_Ganti_Password === "Ya") { switchTab("tab-profil"); return; }
+  switchTab(ROLE_TABS[user.Role][0]);
+}
+
+function tickClock() {
+  const c = myCabang();
+  const tz = c ? ZONA_TZ[c.Zona_Waktu] : undefined;
+  try {
+    $("live-clock").textContent = new Date().toLocaleString("id-ID", { timeZone: tz, dateStyle: "medium", timeStyle: "medium" }) + (c ? " " + c.Zona_Waktu : "");
+  } catch (e) {}
+}
+
+function buildTabs() {
+  $("nav-tabs-container").innerHTML = ROLE_TABS[user.Role].map(id => {
+    const [ic, lb] = TAB_META[id];
+    const label = (id === "tab-rekap" && user.Role === "Pegawai") ? "Riwayat Saya" : lb;
+    return `<button onclick="switchTab('${id}')" id="btn-${id}" class="nav-tab-btn px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-2 text-slate-600"><i class="fa-solid ${ic}"></i> ${label}</button>`;
+  }).join("");
+}
+
+function switchTab(id) {
+  if (!ROLE_TABS[user.Role].includes(id)) return;
+  if (user.Wajib_Ganti_Password === "Ya" && id !== "tab-profil") {
+    showToast("Wajib mengganti password awal terlebih dahulu.", "error");
+    id = "tab-profil";
+  }
+  document.querySelectorAll(".tab-pane").forEach(x => x.classList.add("hidden"));
+  $(id).classList.remove("hidden");
+  document.querySelectorAll(".nav-tab-btn").forEach(x => {
+    x.classList.remove("theme-bg", "text-white");
+    x.classList.add("text-slate-600");
+  });
+  const b = $("btn-" + id);
+  if (b) { b.classList.remove("text-slate-600"); b.classList.add("theme-bg", "text-white"); }
+  $("force-pw-banner").classList.toggle("hidden", user.Wajib_Ganti_Password !== "Ya");
+
+  if (id === "tab-absen") { startCameraStream(); detectLocation(); onTipeChange(); } else stopCameraStream();
+  if (id === "tab-dashboard") initDashboard();
+  if (id === "tab-rekap") initRekap();
+  if (id === "tab-users") initUsers();
+  if (id === "tab-cabang") loadCabangAdmin();
+  if (id === "tab-settings") fillSettingsForm();
+  window.scrollTo(0, 0);
+  $("app-fullscreen-wrapper").scrollTop = 0;
+}
+
+async function refreshMe() {
+  applySession(await api("me"));
+  applyBranding();
+  $("nav-cabang-badge").textContent = user.Nama_Cabang;
+  updateAbsenInfo();
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function initDashboard() {
+  const w = $("dash-cabang-wrap");
+  if (isSuper()) {
+    w.classList.remove("hidden");
+    const cur = $("dash-cabang").value;
+    $("dash-cabang").innerHTML = cabangOptions({ all: true, allLabel: "Semua Cabang", onlyActive: true });
+    if (cur && [...$("dash-cabang").options].some(o => o.value === cur)) $("dash-cabang").value = cur;
+  } else {
+    w.classList.add("hidden");
+  }
+  loadDashboard();
+}
+
+async function loadDashboard() {
+  await run("Memuat dashboard...", async () => {
+    const r = await api("getDashboard", { Kode_Cabang: isSuper() ? $("dash-cabang").value : user.Kode_Cabang });
+    const s = r.summary, sum = k => s.reduce((a, x) => a + (x[k] || 0), 0);
+    $("stat-hadir").textContent = sum("Hadir");
+    $("stat-terlambat").textContent = sum("Terlambat");
+    $("stat-dl").textContent = sum("DL");
+    $("stat-izin").textContent = sum("Izin") + sum("Sakit");
+    $("stat-belum").textContent = sum("Belum_Absen");
+    $("dash-sub").textContent = new Date().toLocaleDateString("id-ID", { dateStyle: "full" }) + (isSuper() ? "" : " · " + user.Nama_Cabang);
+    $("dash-summary-card").classList.toggle("hidden", s.length < 2);
+    $("dash-summary-tbody").innerHTML = s.map(x => `
+      <tr>
+        <td class="py-2.5 px-4 font-bold">${esc(x.Nama_Cabang)}</td>
+        <td class="px-4 text-center">${x.Total_Pegawai}</td>
+        <td class="px-4 text-center text-emerald-700 font-bold">${x.Hadir}</td>
+        <td class="px-4 text-center text-amber-700 font-bold">${x.Terlambat}</td>
+        <td class="px-4 text-center text-purple-700 font-bold">${x.DL || 0}</td>
+        <td class="px-4 text-center">${x.Izin}</td>
+        <td class="px-4 text-center">${x.Sakit}</td>
+        <td class="px-4 text-center text-rose-600 font-bold">${x.Belum_Absen}</td>
+      </tr>`).join("");
+
+    $("dash-today-tbody").innerHTML = r.rows.length ? r.rows.map(x => `
+      <tr>
+        <td class="p-2.5">${fotoThumb(x.Foto_URL, "w-10 h-8 object-cover rounded border")}</td>
+        <td class="p-2.5 font-bold">${esc(x.Waktu)}</td>
+        <td class="p-2.5"><span class="font-bold">${esc(x.Nama_Lengkap)}</span><br><span class="text-[9px] bg-blue-50 text-blue-800 px-1.5 py-0.5 rounded font-bold">${esc(x.Nama_Cabang)}</span></td>
+        <td class="p-2.5"><span class="font-bold">${esc(x.Tipe_Absen)}</span> <span class="text-[9px] ${x.Status_Waktu === "Terlambat" ? "bg-amber-100 text-amber-800" : x.Status_Waktu === "Dinas Luar" ? "bg-purple-100 text-purple-800" : "bg-slate-100 text-slate-700"} px-1.5 py-0.5 rounded font-semibold">${esc(x.Status_Waktu)}</span><br><span class="text-[9px] text-slate-500">${esc(x.Status_Lokasi)}</span></td>
+        <td class="p-2.5">${esc(x.Keterangan)}</td>
+      </tr>`).join("") : `<tr><td colspan="5" class="p-6 text-center text-slate-400">Belum ada presensi hari ini.</td></tr>`;
+  });
+}
+
+function fotoThumb(url, cls) {
+  const u = safeUrl(url);
+  return u ? `<img src="${esc(u)}" loading="lazy" alt="foto" class="${cls} cursor-pointer" data-url="${esc(u)}" onclick="openPhoto(this.dataset.url)">` : `<span class="text-slate-400">-</span>`;
+}
+function openPhoto(u) {
+  const highRes = u.replace("sz=w400", "sz=w1000");
+  $("modal-photo-img").src = highRes;
+  $("modal-photo-download").href = highRes;
+  $("photo-modal").classList.remove("hidden");
+}
+function closePhotoModal() { $("photo-modal").classList.add("hidden"); }
+
+// ============================================================
+// ABSEN (KAMERA SELFIE + WATERMARK + GPS + DL)
+// ============================================================
+function updateAbsenInfo() {
+  const c = myCabang();
+  $("cam-overlay-name").textContent = user.Nama_Lengkap;
+  if (c) {
+    $("info-cabang-nama").textContent = c.Nama_Cabang;
+    $("info-jam").textContent = `${c.Jam_Masuk} – ${c.Jam_Pulang} ${c.Zona_Waktu}`;
+    $("cam-overlay-max-radius").textContent = c.Radius;
+  }
+  $("izin-bebas-badge").classList.toggle("hidden", user.Izin_Bebas !== "Ya");
+}
+
+const getTipe = () => document.querySelector('input[name="tipe_absen"]:checked').value;
+
+function onTipeChange() {
+  const t = getTipe(), w = $("alasan-wrap");
+  if (ALASAN[t]) {
+    w.classList.remove("hidden");
+    $("alasan-label").textContent = t === "DL" ? "Jenis Kegiatan Dinas Luar (DL)" : `Alasan ${t}`;
+    $("absen-alasan").innerHTML = ALASAN[t].map(a => `<option>${esc(a)}</option>`).join("");
+    $("alasan-help").textContent = t === "DL"
+      ? "Wajib mengambil foto selfie & GPS di lokasi Dinas Luar (bebas batas radius kantor)."
+      : "Foto selfie bersifat opsional untuk Izin/Sakit.";
+  } else {
+    w.classList.add("hidden");
+  }
+}
+
+async function startCameraStream() {
+  if (capturedBase64 || videoStream) return;
+  try {
+    videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } });
+    $("camera-stream").srcObject = videoStream;
+    $("camera-stream").classList.remove("hidden");
+    $("camera-status-badge").textContent = "Kamera Live Aktif";
+    $("camera-status-badge").className = "px-2.5 py-1 rounded-lg text-[10px] bg-emerald-100 text-emerald-800 font-bold";
+  } catch (e) {
+    $("camera-status-badge").textContent = "Kamera Diblokir";
+    $("camera-status-badge").className = "px-2.5 py-1 rounded-lg text-[10px] bg-rose-100 text-rose-800 font-bold";
+  }
+}
+
+function stopCameraStream() {
+  if (videoStream) {
+    videoStream.getTracks().forEach(t => t.stop());
+    videoStream = null;
+  }
+}
+
+function capturePhoto() {
+  const v = $("camera-stream");
+  if (!v.videoWidth) return showToast("Kamera belum siap. Izinkan akses kamera di browser HP Anda.", "error");
+  const c = $("camera-canvas");
+  c.width = 480;
+  c.height = 360;
+  const ctx = c.getContext("2d");
+  ctx.save();
+  ctx.translate(480, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(v, 0, 0, 480, 360);
+  ctx.restore();
+
+  ctx.fillStyle = "rgba(15, 23, 42, 0.72)";
+  ctx.fillRect(0, 304, 480, 56);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 11px sans-serif";
+  ctx.fillText(`${user.Nama_Lengkap} (${user.Kode_Cabang}) - ${getTipe()}`, 10, 322);
+  ctx.font = "10px monospace";
+  const gpsStr = userLoc.lat !== null ? `${userLoc.lat.toFixed(5)}, ${userLoc.lng.toFixed(5)} (${userLoc.dist ?? "-"}m)` : "GPS belum siap";
+  ctx.fillText(`${gpsStr} | ${deviceIdentity.id}`, 10, 338);
+  ctx.fillText(new Date().toLocaleString("id-ID"), 10, 352);
+
+  capturedBase64 = c.toDataURL("image/jpeg", 0.65);
+  v.classList.add("hidden");
+  $("captured-photo-preview").src = capturedBase64;
+  $("captured-photo-preview").classList.remove("hidden");
+  $("btn-take-photo").classList.add("hidden");
+  $("btn-retake-photo").classList.remove("hidden");
+  stopCameraStream();
+}
+
+function retakePhoto() {
+  capturedBase64 = null;
+  $("captured-photo-preview").classList.add("hidden");
+  $("btn-take-photo").classList.remove("hidden");
+  $("btn-retake-photo").classList.add("hidden");
+  startCameraStream();
+}
+
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371000, r = Math.PI / 180, dLat = (lat2 - lat1) * r, dLon = (lon2 - lon1) * r;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(dLon / 2) ** 2;
+  return Math.round(2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+function detectLocation() {
+  if (!navigator.geolocation) return showToast("Browser tidak mendukung GPS.", "error");
+  $("gps-coord-text").textContent = "Mendeteksi satelit GPS...";
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = pos.coords.latitude, lng = pos.coords.longitude, c = myCabang();
+    userLoc = { lat, lng, acc: Math.round(pos.coords.accuracy), dist: c ? haversine(lat, lng, c.Lat, c.Lng) : null };
+    $("gps-coord-text").textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)} (Akurasi ±${userLoc.acc} m)`;
+    $("cam-overlay-gps").textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    const out = c && userLoc.dist > c.Radius;
+    $("gps-distance-badge").textContent = userLoc.dist === null ? "-" : userLoc.dist + " meter" + (out ? " (Luar Radius)" : " (Dalam Radius)");
+    $("gps-distance-badge").className = "font-bold " + (out ? "text-amber-600" : "text-emerald-700");
+    $("cam-overlay-jarak").textContent = userLoc.dist === null ? "- m" : userLoc.dist + " m";
+  }, () => showToast("Gagal membaca lokasi GPS. Aktifkan izin lokasi HP Anda.", "error"), { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+}
+
+async function submitAttendance() {
+  const tipe = getTipe();
+  const needLoc = (tipe === "Masuk" || tipe === "Pulang" || tipe === "DL");
+  if (needLoc && userLoc.lat === null) return showToast("Lokasi GPS belum terdeteksi. Tekan tombol Update GPS.", "error");
+  if (needLoc && !capturedBase64) return showToast(`Ambil foto selfie terlebih dahulu untuk presensi ${tipe}.`, "error");
+
+  const c = myCabang();
+  if ((tipe === "Masuk" || tipe === "Pulang") && c && settings.Wajib_Dalam_Radius === "Ya" && user.Izin_Bebas !== "Ya" && userLoc.dist > c.Radius) {
+    return showToast(`Ditolak! Anda berada di luar radius cabang (${userLoc.dist} m). Untuk tugas luar, pilih DL.`, "error");
+  }
+
+  const alasan = ALASAN[tipe] ? $("absen-alasan").value : "";
+  const cat = $("absen-keterangan").value.trim();
+  const ket = [alasan, cat].filter(Boolean).join(" – ") || "-";
+
+  await run("Mengirim presensi...", async () => {
+    const r = await api("submitAbsensi", {
+      Tipe_Absen: tipe,
+      Lat: userLoc.lat,
+      Lng: userLoc.lng,
+      Acc: userLoc.acc,
+      Foto_Base64: capturedBase64,
+      Keterangan: ket
+    });
+    showToast(r.message);
+    $("absen-keterangan").value = "";
+    retakePhoto();
+    switchTab("tab-rekap");
+  });
+}
+
+// ============================================================
+// REKAP, CETAK & KIRIM EMAIL
+// ============================================================
+async function initRekap() {
+  if (!rekapInit) {
+    const now = new Date(), y = now.getFullYear();
+    $("f-tahun").innerHTML = [y, y - 1, y - 2].map(t => `<option value="${t}">${t}</option>`).join("");
+    $("f-bulan").value = String(now.getMonth() + 1).padStart(2, "0");
+    rekapInit = true;
+  }
+  const fc = $("f-cabang");
+  if (isSuper()) {
+    const cur = fc.value;
+    fc.innerHTML = cabangOptions({ all: true, allLabel: "Semua Cabang (Keseluruhan)" });
+    fc.disabled = false;
+    if (cur && [...fc.options].some(o => o.value === cur)) fc.value = cur;
+  } else {
+    fc.innerHTML = `<option value="${esc(user.Kode_Cabang)}">${esc(user.Nama_Cabang)}</option>`;
+    fc.disabled = true;
+  }
+  $("w-f-pegawai").classList.toggle("hidden", user.Role === "Pegawai");
+  $("btn-email-rekap").classList.toggle("hidden", user.Role === "Pegawai");
+  $("th-aksi-rekap").style.display = isSuper() ? "" : "none";
+  if (user.Role === "Pegawai") $("w-f-cabang").classList.add("hidden");
+  await loadPegawaiOptions();
+  loadRekap();
+}
+
+async function loadPegawaiOptions() {
+  if (user.Role === "Pegawai") return;
+  const keep = $("f-pegawai").value;
+  try {
+    const r = await api("getPegawaiOptions", { Kode_Cabang: $("f-cabang").value });
+    pegawaiList = r.pegawai;
+    const all = $("f-cabang").value === "ALL";
+    $("f-pegawai").innerHTML = `<option value="ALL">Semua Pegawai</option>` + pegawaiList.map(p => `<option value="${esc(p.Username)}">${esc(p.Nama_Lengkap)}${all ? " — " + esc(p.Nama_Cabang) : ""}</option>`).join("");
+    if (keep && [...$("f-pegawai").options].some(o => o.value === keep)) $("f-pegawai").value = keep;
+  } catch (e) { showToast(e.message, "error"); }
+}
+
+async function onCabangFilterChange() {
+  $("f-pegawai").value = "ALL";
+  await loadPegawaiOptions();
+  loadRekap();
+}
+
+async function loadRekap() {
+  await run("Memuat rekapitulasi...", async () => {
+    const r = await api("getRekap", {
+      Kode_Cabang: $("f-cabang").value || user.Kode_Cabang,
+      Bulan: $("f-bulan").value,
+      Tahun: $("f-tahun").value,
+      Username: user.Role === "Pegawai" ? "" : $("f-pegawai").value
+    });
+    rekapRows = r.rows;
+    $("rekap-note").textContent = r.truncated ? "⚠ Data dipotong (terlalu banyak). Persempit filter." : "";
+    renderRekap();
+  });
+}
+
+function filteredRows() {
+  const t = $("f-tipe").value, s = $("f-status").value, l = $("f-lokasi").value;
+  return rekapRows.filter(x =>
+    (t === "ALL" || x.Tipe_Absen === t) &&
+    (s === "ALL" || x.Status_Waktu === s) &&
+    (l === "ALL" || (l === "DALAM" ? x.Status_Lokasi === "Dalam Radius" : x.Status_Lokasi.indexOf("Luar") === 0))
+  );
+}
+
+function cabangLabel() {
+  const fc = $("f-cabang");
+  return user.Role === "Superadmin" ? fc.options[fc.selectedIndex]?.text || "" : user.Nama_Cabang;
+}
+
+function renderRekap() {
+  const d = filteredRows(), ringkas = $("f-mode").value === "ringkas";
+  const periode = BULAN[parseInt($("f-bulan").value, 10) - 1] + " " + $("f-tahun").value;
+
+  const cnt = f => d.filter(f).length;
+  const cards = [
+    ["Total Log", d.length, "slate"],
+    ["Masuk", cnt(x => x.Tipe_Absen === "Masuk"), "emerald"],
+    ["Terlambat", cnt(x => x.Status_Waktu === "Terlambat"), "amber"],
+    ["Dinas Luar (DL)", cnt(x => x.Tipe_Absen === "DL"), "purple"],
+    ["Izin", cnt(x => x.Tipe_Absen === "Izin"), "blue"],
+    ["Sakit", cnt(x => x.Tipe_Absen === "Sakit"), "rose"]
+  ];
+  $("rekap-cards").innerHTML = cards.map(c => `
+    <div class="bg-white border rounded-2xl p-3">
+      <p class="text-[10px] font-bold text-slate-500 uppercase">${c[0]}</p>
+      <p class="text-xl font-extrabold text-${c[2]}-600">${c[1]}</p>
+    </div>`).join("");
+
+  $("print-title").textContent = "LAPORAN PRESENSI PEGAWAI " + (ringkas ? "(RINGKASAN PER PEGAWAI)" : "(DETAIL LOG)");
+  const pegSel = $("f-pegawai");
+  const peg = user.Role !== "Pegawai" && pegSel.value !== "ALL" ? " · Pegawai: " + pegSel.options[pegSel.selectedIndex].text : "";
+  $("print-sub").textContent = `Cabang: ${cabangLabel()} · Periode: ${periode}${peg}`;
+  $("print-meta").textContent = `Dicetak oleh ${user.Nama_Lengkap} · ${new Date().toLocaleString("id-ID")}`;
+  $("print-ttd-role").textContent = isSuper() ? "Superadmin" : "Admin Cabang " + user.Nama_Cabang;
+  $("print-area").classList.toggle("no-foto-print", $("f-foto").value !== "Ya");
+
+  $("tbl-detail").classList.toggle("hidden", ringkas);
+  $("tbl-ringkas").classList.toggle("hidden", !ringkas);
+
+  if (!ringkas) {
+    const sup = isSuper();
+    $("rekap-detail-tbody").innerHTML = d.length ? d.map(x => `
+      <tr class="border-b">
+        <td class="p-2 border whitespace-nowrap font-bold">${esc(x.Tanggal)}<br><span class="font-normal">${esc(x.Waktu)}</span></td>
+        <td class="p-2 border font-semibold">${esc(x.Nama_Lengkap)}</td>
+        <td class="p-2 border font-bold text-blue-700">${esc(x.Nama_Cabang)}</td>
+        <td class="p-2 border font-bold">${esc(x.Tipe_Absen)}<br><span class="text-[9px] ${x.Status_Waktu === "Terlambat" ? "text-amber-700 font-bold" : x.Status_Waktu === "Dinas Luar" ? "text-purple-700 font-bold" : "text-slate-500"}">${esc(x.Status_Waktu)}</span></td>
+        <td class="p-2 border ${x.Status_Lokasi === "Dalam Radius" ? "text-emerald-700" : "text-amber-700"} font-bold">${esc(x.Status_Lokasi)}<br><span class="text-[9px] text-slate-500 font-normal">${esc(x.Jarak_Meter)} m</span></td>
+        <td class="p-2 border text-center col-foto">${fotoThumb(x.Foto_URL, "w-10 mx-auto border rounded")}</td>
+        <td class="p-2 border">${esc(x.Keterangan)}</td>
+        ${sup ? `<td class="p-2 border text-center no-print"><button onclick="hapusLog('${esc(x.Kode_Cabang)}','${esc(x.ID_Absen)}')" class="text-rose-600" title="Hapus"><i class="fa-solid fa-trash"></i></button></td>` : ""}
+      </tr>`).join("")
+      : `<tr><td colspan="8" class="p-6 text-center text-slate-400">Tidak ada data untuk filter ini.</td></tr>`;
+  } else {
+    const m = {};
+    d.forEach(x => {
+      const k = x.Kode_Cabang + "|" + x.Username.toLowerCase();
+      const o = m[k] = m[k] || { n: x.Nama_Lengkap, c: x.Nama_Cabang, hari: new Set(), tl: 0, pc: 0, dl: 0, iz: 0, sk: 0, lr: 0 };
+      if (x.Tipe_Absen === "Masuk") o.hari.add(x.Tanggal);
+      if (x.Status_Waktu === "Terlambat") o.tl++;
+      if (x.Status_Waktu === "Pulang Cepat") o.pc++;
+      if (x.Tipe_Absen === "DL") o.dl++;
+      if (x.Tipe_Absen === "Izin") o.iz++;
+      if (x.Tipe_Absen === "Sakit") o.sk++;
+      if (x.Status_Lokasi.indexOf("Luar") === 0) o.lr++;
+    });
+    const arr = Object.values(m).sort((a, b) => a.c.localeCompare(b.c) || a.n.localeCompare(b.n));
+    $("rekap-ringkas-tbody").innerHTML = arr.length ? arr.map((o, i) => `
+      <tr>
+        <td class="p-2 border text-center">${i + 1}</td>
+        <td class="p-2 border font-bold">${esc(o.n)}</td>
+        <td class="p-2 border">${esc(o.c)}</td>
+        <td class="p-2 border text-center font-bold text-emerald-700">${o.hari.size}</td>
+        <td class="p-2 border text-center">${o.tl}</td>
+        <td class="p-2 border text-center">${o.pc}</td>
+        <td class="p-2 border text-center font-bold text-purple-700">${o.dl}</td>
+        <td class="p-2 border text-center">${o.iz}</td>
+        <td class="p-2 border text-center">${o.sk}</td>
+        <td class="p-2 border text-center">${o.lr}</td>
+      </tr>`).join("")
+      : `<tr><td colspan="10" class="p-6 text-center text-slate-400">Tidak ada data untuk filter ini.</td></tr>`;
+  }
+}
+
+async function handleSendEmailReportNow() {
+  const defEmail = settings.Email_Laporan || "";
+  const email = prompt("Masukkan alamat email tujuan pengiriman laporan:", defEmail);
+  if (!email) return;
+  await run("Mengirim laporan ke email...", async () => {
+    const r = await api("sendMonthlyReport", {
+      email: email.trim(),
+      Bulan: $("f-bulan").value,
+      Tahun: $("f-tahun").value,
+      Kode_Cabang: $("f-cabang").value || user.Kode_Cabang
+    });
+    showToast(r.message);
+  });
+}
+
+async function hapusLog(kode, id) {
+  if (!confirm("Hapus catatan absensi ini beserta fotonya di Drive?")) return;
+  await run("Menghapus...", async () => {
+    const r = await api("deleteAbsensi", { Kode_Cabang: kode, ID_Absen: id });
+    showToast(r.message);
+  });
+  loadRekap();
+}
+
+function exportCSV() {
+  const d = filteredRows();
+  if (!d.length) return showToast("Tidak ada data untuk diekspor.", "error");
+  const cols = ["Tanggal", "Waktu", "Nama_Lengkap", "Nama_Cabang", "Tipe_Absen", "Status_Waktu", "Status_Lokasi", "Jarak_Meter", "Koordinat_GPS", "Keterangan", "Device_ID"];
+  const q = v => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+  const csv = "\uFEFF" + cols.join(";") + "\n" + d.map(r => cols.map(c => q(r[c])).join(";")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  a.download = `rekap-absensi-${$("f-tahun").value}-${$("f-bulan").value}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ============================================================
+// AKUN, MULTI-AKUN & KUNCI PERANGKAT HP (SUPERADMIN)
+// ============================================================
+async function initUsers() {
+  $("form-user-cabang").innerHTML = cabangOptions({ onlyActive: true });
+  const cur = $("uf-cabang").value;
+  $("uf-cabang").innerHTML = cabangOptions({ all: true, allLabel: "Semua Cabang" });
+  if (cur) $("uf-cabang").value = cur;
+  await run("Memuat daftar akun...", async () => {
+    usersList = (await api("listUsers")).users;
+    renderUsers();
+  });
+}
+
+function renderUsers() {
+  const c = $("uf-cabang").value || "ALL", r = $("uf-role").value, q = $("uf-q").value.trim().toLowerCase();
+  const d = usersList.filter(u =>
+    (c === "ALL" || u.Kode_Cabang === c) &&
+    (r === "ALL" || u.Role === r) &&
+    (!q || (u.Nama_Lengkap + " " + u.Username).toLowerCase().includes(q))
+  );
+  $("users-tbody").innerHTML = d.length ? d.map(u => {
+    const hasDev = Boolean(u.Device_ID);
+    return `
+      <tr class="${u.Status_Aktif === "Nonaktif" ? "opacity-50" : ""}">
+        <td class="p-3">
+          <span class="font-bold">${esc(u.Nama_Lengkap)}</span><br>
+          <span class="text-[10px] font-mono text-slate-500">@${esc(u.Username)}</span> ·
+          <span class="text-[10px] text-blue-700 font-bold bg-blue-50 px-1.5 py-0.5 rounded">${esc(u.Kode_Cabang)}</span>
+        </td>
+        <td class="p-3 space-y-1">
+          <div>
+            <span class="font-bold text-slate-700">${esc(u.Role)}</span>
+            <span class="text-[10px] ${u.Status_Aktif === "Aktif" ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"} px-1.5 py-0.5 rounded font-semibold">${esc(u.Status_Aktif)}</span>
+          </div>
+          <div class="flex flex-wrap gap-1">
+            ${u.Izin_Bebas === "Ya" ? `<span class="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold">Bebas Radius</span>` : ""}
+            ${u.Izin_Multi_Akun === "Ya" ? `<span class="text-[9px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-bold"><i class="fa-solid fa-users-viewfinder"></i> Multi-Akun HP</span>` : ""}
+          </div>
+        </td>
+        <td class="p-3">
+          ${u.Role === "Superadmin"
+            ? `<span class="text-[10px] text-slate-400">Bebas Perangkat</span>`
+            : hasDev
+              ? `<span class="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-lg font-bold inline-block"><i class="fa-solid fa-lock text-emerald-600 mr-1"></i>${esc(u.Device_Info || u.Device_ID)}</span>`
+              : `<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-lg">Belum Terikat HP</span>`
+          }
+        </td>
+        <td class="p-3 text-center whitespace-nowrap space-x-2">
+          ${hasDev ? `<button onclick="resetDevice('${esc(u.ID_User)}','${esc(u.Nama_Lengkap)}')" class="px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[10px] font-bold" title="Reset Kunci HP"><i class="fa-solid fa-mobile-screen"></i> Reset HP</button>` : ""}
+          <button onclick="editUser('${esc(u.ID_User)}')" class="text-blue-600" title="Edit Akun"><i class="fa-solid fa-pen-to-square"></i></button>
+          <button onclick="hapusUser('${esc(u.ID_User)}')" class="text-rose-600" title="Hapus Akun"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      </tr>`;
+  }).join("") : `<tr><td colspan="4" class="p-6 text-center text-slate-400">Tidak ada akun.</td></tr>`;
+}
+
+function editUser(id) {
+  const u = usersList.find(x => x.ID_User === id);
+  if (!u) return;
+  $("user-form-title").textContent = "Edit Akun Pegawai";
+  $("form-user-id").value = u.ID_User;
+  $("form-user-nama").value = u.Nama_Lengkap;
+  $("form-user-username").value = u.Username;
+  $("form-user-username").readOnly = true;
+  $("form-user-password").value = "";
+  $("form-user-password").placeholder = "Kosongkan jika tidak diubah";
+  $("pw-hint").textContent = "Isi hanya untuk mereset password.";
+  $("form-user-cabang").value = u.Kode_Cabang;
+  $("form-user-role").value = u.Role;
+  $("form-user-status").value = u.Status_Aktif;
+  $("form-user-bebas").value = u.Izin_Bebas;
+  $("form-user-multi-akun").value = u.Izin_Multi_Akun || "Tidak";
+  $("wrap-reset-device").classList.remove("hidden");
+  $("form-user-reset-device").value = "Tidak";
+  $("form-user-nama").focus();
+}
+
+function resetUserForm() {
+  $("user-form").reset();
+  $("form-user-id").value = "";
+  $("user-form-title").textContent = "Tambah Akun Pegawai";
+  $("form-user-username").readOnly = false;
+  $("form-user-password").placeholder = "Password (min. 6 karakter)";
+  $("pw-hint").textContent = "Pengguna wajib menggantinya saat login pertama.";
+  $("form-user-multi-akun").value = "Tidak";
+  $("wrap-reset-device").classList.add("hidden");
+}
+
+async function handleSaveUser(e) {
+  e.preventDefault();
+  const id = $("form-user-id").value;
+  const u = {
+    ID_User: id,
+    Nama_Lengkap: $("form-user-nama").value,
+    Username: $("form-user-username").value,
+    Password: $("form-user-password").value,
+    Kode_Cabang: $("form-user-cabang").value,
+    Role: $("form-user-role").value,
+    Status_Aktif: $("form-user-status").value,
+    Izin_Bebas: $("form-user-bebas").value,
+    Izin_Multi_Akun: $("form-user-multi-akun").value,
+    Reset_Device: id ? $("form-user-reset-device").value : "Tidak"
+  };
+  if (!id && u.Password.length < 6) return showToast("Password awal minimal 6 karakter.", "error");
+  await run("Menyimpan akun...", async () => {
+    const r = await api("saveUser", { userData: u });
+    showToast(r.message);
+    resetUserForm();
+    usersList = (await api("listUsers")).users;
+    renderUsers();
+  });
+}
+
+async function resetDevice(id, nama) {
+  if (!confirm(`Reset penguncian perangkat (HP) untuk "${nama}"?\nPegawai tersebut akan dapat login menggunakan HP barunya.`)) return;
+  await run("Mereset perangkat...", async () => {
+    const r = await api("resetUserDevice", { ID_User: id });
+    showToast(r.message);
+    usersList = (await api("listUsers")).users;
+    renderUsers();
+  });
+}
+
+async function hapusUser(id) {
+  const u = usersList.find(x => x.ID_User === id);
+  if (!u || !confirm(`Hapus akun "${u.Nama_Lengkap}"? Riwayat absensinya tetap tersimpan.`)) return;
+  await run("Menghapus...", async () => {
+    const r = await api("deleteUser", { ID_User: id });
+    showToast(r.message);
+    usersList = (await api("listUsers")).users;
+    renderUsers();
+  });
+}
+
+// ============================================================
+// CABANG (SUPERADMIN)
+// ============================================================
+async function loadCabangAdmin() {
+  await run("Memuat data cabang...", async () => {
+    const r = await api("getCabangAdmin");
+    cabangAdminList = r.cabangList;
+    const a = $("link-ss");
+    a.href = safeUrl(r.spreadsheetUrl);
+    a.classList.toggle("hidden", !a.href);
+    const f = $("link-folder");
+    f.href = safeUrl(r.folderUrl);
+    f.classList.toggle("hidden", !f.href);
+    renderCabangTable();
+  });
+}
+
+function renderCabangTable() {
+  $("cabang-tbody").innerHTML = cabangAdminList.map(c => `
+    <tr class="${c.Status_Aktif === "Nonaktif" ? "opacity-50" : ""}">
+      <td class="p-3">
+        <span class="font-bold">${esc(c.Nama_Cabang)}</span><br>
+        <span class="text-[10px] font-mono bg-slate-100 px-1.5 py-0.5 rounded">${esc(c.Kode_Cabang)}</span>
+        <span class="text-[10px] ${c.Status_Aktif === "Aktif" ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"} px-1.5 py-0.5 rounded font-semibold">${esc(c.Status_Aktif)}</span>
+      </td>
+      <td class="p-3">${esc(c.Jam_Masuk)}–${esc(c.Jam_Pulang)} ${esc(c.Zona_Waktu)}<br><span class="text-[10px] text-slate-500">Radius ${c.Radius} m</span></td>
+      <td class="p-3 text-center font-bold">${c.Jumlah_Akun}</td>
+      <td class="p-3 text-center font-bold">${c.Jumlah_Catatan}</td>
+      <td class="p-3 text-center whitespace-nowrap">
+        <button onclick="editCabang('${esc(c.Kode_Cabang)}')" class="text-blue-600 mr-2" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+        <a href="${esc(safeUrl(c.Sheet_Url))}" target="_blank" rel="noopener" class="theme-text" title="Buka sheet ${esc(c.Nama_Sheet)}"><i class="fa-solid fa-table"></i></a>
+      </td>
+    </tr>`).join("");
+}
+
+function resetCabangForm() {
+  $("cb-kode").value = ""; $("cb-nama").value = ""; $("cb-lat").value = ""; $("cb-lng").value = "";
+  $("cb-radius").value = "150"; $("cb-zona").value = "WIB"; $("cb-masuk").value = "08:00";
+  $("cb-pulang").value = "17:00"; $("cb-status").value = "Aktif";
+  $("cb-kode-info").classList.add("hidden");
+  $("cabang-form-title").textContent = "Tambah Cabang Baru";
+  $("cb-nama").focus();
+}
+
+function editCabang(kode) {
+  const c = cabangAdminList.find(x => x.Kode_Cabang === kode);
+  if (!c) return;
+  $("cb-kode").value = c.Kode_Cabang;
+  $("cb-nama").value = c.Nama_Cabang;
+  $("cb-lat").value = c.Lat;
+  $("cb-lng").value = c.Lng;
+  if (![...$("cb-radius").options].some(o => o.value == c.Radius)) {
+    $("cb-radius").insertAdjacentHTML("beforeend", `<option value="${c.Radius}">${c.Radius} meter</option>`);
+  }
+  $("cb-radius").value = c.Radius;
+  $("cb-zona").value = c.Zona_Waktu;
+  $("cb-masuk").value = c.Jam_Masuk;
+  $("cb-pulang").value = c.Jam_Pulang;
+  $("cb-status").value = c.Status_Aktif;
+  $("cb-kode-info").textContent = `Kode: ${c.Kode_Cabang} · Sheet: ${c.Nama_Sheet}`;
+  $("cb-kode-info").classList.remove("hidden");
+  $("cabang-form-title").textContent = "Edit Cabang";
+  window.scrollTo(0, 0);
+  $("app-fullscreen-wrapper").scrollTop = 0;
+}
+
+function setCenterToCurrentGPS() {
+  if (!navigator.geolocation) return showToast("Browser tidak mendukung GPS.", "error");
+  navigator.geolocation.getCurrentPosition(p => {
+    $("cb-lat").value = p.coords.latitude.toFixed(6);
+    $("cb-lng").value = p.coords.longitude.toFixed(6);
+  }, () => showToast("Gagal membaca GPS. Aktifkan izin lokasi.", "error"), { enableHighAccuracy: true });
+}
+
+async function handleSaveCabang(e) {
+  e.preventDefault();
+  const c = {
+    Kode_Cabang: $("cb-kode").value,
+    Nama_Cabang: $("cb-nama").value,
+    Lat: $("cb-lat").value,
+    Lng: $("cb-lng").value,
+    Radius: $("cb-radius").value,
+    Jam_Masuk: $("cb-masuk").value,
+    Jam_Pulang: $("cb-pulang").value,
+    Zona_Waktu: $("cb-zona").value,
+    Status_Aktif: $("cb-status").value
+  };
+  await run("Menyimpan cabang...", async () => {
+    const r = await api("saveCabang", { cabangData: c });
+    showToast(r.message);
+    await refreshMe();
+    resetCabangForm();
+    await loadCabangAdmin();
+  });
+}
+
+// ============================================================
+// PENGATURAN GLOBAL, UNGGAH LOGO/PEJABAT & PROFIL
+// ============================================================
+function fillSettingsForm() {
+  $("set-nama-instansi").value = settings.Nama_Instansi || "";
+  $("set-sub-judul").value = settings.Sub_Judul_Instansi || "";
+  $("set-logo-url").value = settings.Logo_URL || "";
+  $("set-bupati-url").value = settings.Foto_Bupati_URL || "";
+  $("set-bupati-nama").value = settings.Nama_Bupati || "";
+  $("set-wabup-url").value = settings.Foto_Wabup_URL || "";
+  $("set-wabup-nama").value = settings.Nama_Wabup || "";
+  $("set-warna-tema").value = settings.Warna_Tema || "blue";
+  $("set-wajib-radius").value = settings.Wajib_Dalam_Radius || "Tidak";
+  $("set-kunci-perangkat").value = settings.Kunci_Perangkat || "Ya";
+  $("set-multi-akun-global").value = settings.Izinkan_Satu_HP_Multi_Akun || "Tidak";
+  $("set-maks-akurasi").value = settings.Maks_Akurasi_GPS || "200";
+  $("set-email-laporan").value = settings.Email_Laporan || "";
+  $("set-auto-email").value = settings.Auto_Email_Akhir_Bulan || "Tidak";
+  applyLogoElements(settings.Logo_URL);
+  previewPejabat();
+}
+
+function handleUploadAsset(inputEl, assetType, targetInputId, callbackFn) {
+  const file = inputEl.files && inputEl.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (ev) {
+    const img = new Image();
+    img.onload = async function () {
+      const maxDim = 700;
+      let w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+        else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+      const mime = file.type === "image/png" ? "image/png" : "image/jpeg";
+      const base64Data = canvas.toDataURL(mime, 0.82);
+
+      await run("Mengunggah gambar ke Folder Drive Utama...", async () => {
+        const r = await api("uploadAsset", { assetType, base64Data });
+        $(targetInputId).value = r.url;
+        if (callbackFn) callbackFn(r.url);
+        showToast(r.message);
+      });
+      inputEl.value = "";
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function handleSaveSettings(e) {
+  e.preventDefault();
+  const s = {
+    Nama_Instansi: $("set-nama-instansi").value,
+    Sub_Judul_Instansi: $("set-sub-judul").value,
+    Logo_URL: $("set-logo-url").value,
+    Foto_Bupati_URL: $("set-bupati-url").value,
+    Nama_Bupati: $("set-bupati-nama").value,
+    Foto_Wabup_URL: $("set-wabup-url").value,
+    Nama_Wabup: $("set-wabup-nama").value,
+    Warna_Tema: $("set-warna-tema").value,
+    Wajib_Dalam_Radius: $("set-wajib-radius").value,
+    Kunci_Perangkat: $("set-kunci-perangkat").value,
+    Izinkan_Satu_HP_Multi_Akun: $("set-multi-akun-global").value,
+    Maks_Akurasi_GPS: $("set-maks-akurasi").value,
+    Email_Laporan: $("set-email-laporan").value,
+    Auto_Email_Akhir_Bulan: $("set-auto-email").value
+  };
+  await run("Menyimpan pengaturan...", async () => {
+    const r = await api("saveSettings", { settings: s });
+    await refreshMe();
+    showToast(r.message);
+  });
+}
+
+async function handleTestEmailSettings() {
+  const email = $("set-email-laporan").value.trim();
+  if (!email) return showToast("Isi alamat Email Penerima Laporan terlebih dahulu.", "error");
+  const now = new Date();
+  const bln = String(now.getMonth() + 1).padStart(2, "0");
+  const thn = String(now.getFullYear());
+  await run("Mengirim tes laporan bulan ini ke email...", async () => {
+    const r = await api("sendMonthlyReport", { email, Bulan: bln, Tahun: thn, Kode_Cabang: "ALL" });
+    showToast(r.message);
+  });
+}
+
+async function handleChangePassword(e) {
+  e.preventDefault();
+  const p1 = $("new-password").value;
+  if (p1 !== $("confirm-password").value) return showToast("Konfirmasi password baru tidak sama.", "error");
+  await run("Memperbarui password...", async () => {
+    const r = await api("changePassword", { oldPassword: $("old-password").value, newPassword: p1 });
+    user.Wajib_Ganti_Password = "Tidak";
+    $("force-pw-banner").classList.add("hidden");
+    ["old-password", "new-password", "confirm-password"].forEach(i => $(i).value = "");
+    showToast(r.message);
+    switchTab(ROLE_TABS[user.Role][0]);
+  });
+}
+</script>
+</body>
+</html>
